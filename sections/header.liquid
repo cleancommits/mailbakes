@@ -11,7 +11,6 @@
   <link rel="stylesheet" href="{{ 'component-mega-menu.css' | asset_url }}" media="print" onload="this.media='all'">
 {%- endif -%}
 
-
 <style>
   header-drawer {
     justify-self: start;
@@ -398,6 +397,44 @@
   }
 
   customElements.define('sticky-header', StickyHeader);
+
+  // Search modal click behavior
+  document.addEventListener('DOMContentLoaded', () => {
+    // Target search inputs
+    const searchInputs = document.querySelectorAll('#Search-In-Modal, #Search-In-Modal-1');
+    searchInputs.forEach(input => {
+      // Prevent hover from opening modal
+      input.addEventListener('mouseenter', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+      input.addEventListener('mouseover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+      // Open modal on click
+      input.addEventListener('click', (e) => {
+        const modal = input.closest('details-modal');
+        if (modal && typeof modal.open === 'function') {
+          modal.open();
+          input.focus();
+        }
+      });
+    });
+
+    // Prevent hover on parent elements
+    const searchContainers = document.querySelectorAll('.header__search');
+    searchContainers.forEach(container => {
+      container.addEventListener('mouseenter', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+      container.addEventListener('mouseover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+    });
+  });
 {% endjavascript %}
 
 <script type="application/ld+json">
