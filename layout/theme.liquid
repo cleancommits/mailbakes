@@ -17,8 +17,8 @@
 
     <title>
       {{ page_title }}
-      {%- if current_tags %} &ndash; tagged "{{ current_tags | join: ', ' }}"{% endif -%}
-      {%- if current_page != 1 %} &ndash; Page {{ current_page }}{% endif -%}
+      {%- if current_tags %} – tagged "{{ current_tags | join: ', ' }}"{% endif -%}
+      {%- if current_page != 1 %} – Page {{ current_page }}{% endif -%}
     </title>
 
     {% if page_description %}
@@ -33,11 +33,85 @@
     <script src="{{ 'details-disclosure.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'details-modal.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'search-form.js' | asset_url }}" defer="defer"></script>
-    <script defer src="https://app.mailbakes.com/script.js"></script>
 
     {%- if settings.animations_reveal_on_scroll -%}
       <script src="{{ 'animations.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
+
+    <!-- Block app.mailbakes.com injections -->
+    <script>
+      (function() {
+        // Block script tags and dynamic injections
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.addedNodes.length) {
+              mutation.addedNodes.forEach((node) => {
+                // Check for script, iframe, or link elements
+                if (node.tagName && ['SCRIPT', 'IFRAME', 'LINK'].includes(node.tagName.toUpperCase()) && node.src && node.src.includes('app.mailbakes.com')) {
+                  console.log('Removing element: ', node.tagName, 'with src:', node.src, 'Parent:', node.parentNode ? node.parentNode.outerHTML : 'No parent');
+                  node.remove();
+                }
+                // Check child nodes for nested elements
+                if (node.querySelectorAll) {
+                  const elements = node.querySelectorAll('script, iframe, link');
+                  elements.forEach((el) => {
+                    if (el.src && el.src.includes('app.mailbakes.com')) {
+                      console.log('Removing nested element: ', el.tagName, 'with src:', el.src, 'Parent:', el.parentNode ? el.parentNode.outerHTML : 'No parent');
+                      el.remove();
+                    }
+                  });
+                }
+              });
+            }
+          });
+        });
+
+        // Observe the entire document
+        observer.observe(document.documentElement, { childList: true, subtree: true });
+
+        // Clean up observer on page unload
+        window.addEventListener('unload', () => {
+          observer.disconnect();
+        });
+
+        // Block network requests as a fallback
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options) {
+          if (typeof url === 'string' && url.includes('app.mailbakes.com')) {
+            console.log('Blocked fetch request to: ', url);
+            return Promise.reject('Blocked by custom script');
+          }
+          return originalFetch.apply(this, arguments);
+        };
+
+        const originalOpen = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function(method, url) {
+          if (typeof url === 'string' && url.includes('app.mailbakes.com')) {
+            console.log('Blocked XHR request to: ', url);
+            return;
+          }
+          return originalOpen.apply(this, arguments);
+        };
+
+        // Block dynamic script creation
+        const originalCreateElement = document.createElement;
+        document.createElement = function(tagName) {
+          const element = originalCreateElement.apply(this, arguments);
+          if (tagName.toLowerCase() === 'script') {
+            Object.defineProperty(element, 'src', {
+              set: function(value) {
+                if (value.includes('app.mailbakes.com')) {
+                  console.log('Blocked dynamic script creation for: ', value);
+                  return;
+                }
+                element.setAttribute('src', value);
+              }
+            });
+          }
+          return element;
+        };
+      })();
+    </script>
 
     {{ content_for_header }}
 
@@ -385,44 +459,43 @@
       };
     </script>
 
-<!-- Load jQuery (if not already loaded) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
- document.addEventListener("DOMContentLoaded", function () {
-  function isDesktop() {
-    return window.innerWidth > 1200;
-  }
+    <!-- Load jQuery (if not already loaded) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        function isDesktop() {
+          return window.innerWidth > 1200;
+        }
 
-  if (isDesktop()) {
-    const allDetails = document.querySelectorAll('details');
+        if (isDesktop()) {
+          const allDetails = document.querySelectorAll('details');
 
-    allDetails.forEach((details) => {
-      let timeout;
+          allDetails.forEach((details) => {
+            let timeout;
 
-      details.addEventListener('mouseenter', () => {
-        clearTimeout(timeout);
-        details.setAttribute('open', true);
-      });
+            details.addEventListener('mouseenter', () => {
+              clearTimeout(timeout);
+              details.setAttribute('open', true);
+            });
 
-      details.addEventListener('mouseleave', () => {
-        timeout = setTimeout(() => {
-          details.removeAttribute('open');
-        }, 200);
-      });
-    });
+            details.addEventListener('mouseleave', () => {
+              timeout = setTimeout(() => {
+                details.removeAttribute('open');
+              }, 200);
+            });
+          });
 
-    document.querySelectorAll('summary').forEach((summary) => {
-      summary.addEventListener('click', function (e) {
-       if (summary.closest('nav') && !e.target.closest('a')) {
-          e.preventDefault();
+          document.querySelectorAll('summary').forEach((summary) => {
+            summary.addEventListener('click', function (e) {
+              if (summary.closest('nav') && !e.target.closest('a')) {
+                e.preventDefault();
+              }
+            });
+          });
         }
       });
-    });
-  }
-});
-
-</script>
-    
+    </script>
+     
     {%- if settings.predictive_search_enabled -%}
       <script src="{{ 'predictive-search.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
@@ -431,138 +504,86 @@
       <script src="{{ 'cart-drawer.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
 
-        <!-- =========================== -->
-<!-- STORE CONFIGURATION START  -->
-<!-- =========================== -->
-<script>
-  // Store-specific configuration - UPDATE THESE VALUES FOR EACH STORE
-  window.storeGA4Config = {
-    // Google Analytics Settings
-    measurementId: 'G-H8R5Z387LN', // Replace with your GA4 Measurement ID
-    
-    // CSS Selectors (update based on your theme)
-    selectors: {
-      addToCartButton: '.product-form__buttons', // Add to cart button selector
-      checkoutButton: '.cart__checkout-button', // Checkout button selector
-      alternateCheckoutButton: '.Cart__Checkout' // Alternative checkout button (if any)
-    },
-    
-    // Search Settings
-    elementSearchTimeout: 3000, // How long to search for elements (milliseconds)
-    searchInterval: 100, // How often to check for elements (milliseconds)
-    
-    // Event Settings
-    preventRapidClicks: true,
-    rapidClickTimeout: 1000, // Reset processing flag after this time
-    
-    // Tracking Settings
-    trackPageViews: false, // Set to true if you want automatic page views
-    enableConsoleLogging: true, // Set to false to disable console logs
-    
-    // Store Information
-    storeName: '{{ shop.name }}', // Keep as liquid variable or replace with store name
-    currency: '{{ cart.currency.iso_code }}' // Keep as liquid variable or replace with currency code
-  };
-</script>
-<!-- =========================== -->
-<!-- STORE CONFIGURATION END    -->
-<!-- =========================== -->
-<!-- Google Analytics 4 Integration Script -->
-<script async src="https://www.googletagmanager.com/gtag/js?id={{ storeGA4Config.measurementId }}"></script>
-<script>
-  // Initialize Google Analytics
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', window.storeGA4Config.measurementId, {
-    'send_page_view': window.storeGA4Config.trackPageViews
-  });
-  // Force all events to use correct measurement ID
-  gtag('set', 'send_to', [window.storeGA4Config.measurementId]);
-  // Enhanced eCommerce tracking
-  gtag('set', 'user_properties', {
-    'user_id': '{{ customer.id }}',
-    'customer_type': 'returning'
-  });
-  // Helper function for logging
-  function gaLog(message) {
-    if (window.storeGA4Config.enableConsoleLogging) {
-      console.log('[GA4] ' + message);
-    }
-  }
-  // Track collection page views
-  {% if template.name == 'collection' %}
-  gtag('event', 'view_item_list', {
-    'send_to': window.storeGA4Config.measurementId,
-    'items': [
-      {% for product in collection.products limit:10 %}
-      {
-        'item_id': '{{ product.id }}',
-        'item_name': '{{ product.title | replace: "'", "\\'" }}',
-        'item_brand': '{{ product.vendor | replace: "'", "\\'" }}',
-        'item_category': '{{ collection.title | replace: "'", "\\'" }}',
-        'item_variant': '{{ product.selected_or_first_available_variant.title | replace: "'", "\\'" }}',
-        'price': {{ product.price | divided_by: 100.0 }}
-      }{% unless forloop.last %},{% endunless %}
-      {% endfor %}
-    ]
-  });
-  {% endif %}
-  // Track product page views
-  {% if template.name == 'product' %}
-  gtag('event', 'view_item', {
-    'send_to': window.storeGA4Config.measurementId,
-    'items': [
-      {
-        'item_id': '{{ product.id }}',
-        'item_name': '{{ product.title | replace: "'", "\\'" }}',
-        'item_brand': '{{ product.vendor | replace: "'", "\\'" }}',
-        'item_category': '{{ product.type | replace: "'", "\\'" }}',
-        'item_variant': '{{ product.selected_or_first_available_variant.title | replace: "'", "\\'" }}',
-        'price': {{ product.price | divided_by: 100.0 }}
-      }
-    ]
-  });
-  // Add to cart tracking with element search
-  document.addEventListener('DOMContentLoaded', function() {
-    gaLog('Setting up add to cart tracking');
-    
-    let searchStartTime = Date.now();
-    let searchInterval;
-    let found = false;
-    
-    const searchForAddToCartButtons = function() {
-      const atcButtons = document.querySelectorAll(window.storeGA4Config.selectors.addToCartButton);
-      
-      if (atcButtons.length > 0 && !found) {
-        found = true;
-        gaLog('Found ' + atcButtons.length + ' add to cart buttons');
+    <!-- =========================== -->
+    <!-- STORE CONFIGURATION START  -->
+    <!-- =========================== -->
+    <script>
+      // Store-specific configuration - UPDATE THESE VALUES FOR EACH STORE
+      window.storeGA4Config = {
+        // Google Analytics Settings
+        measurementId: 'G-H8R5Z387LN', // Replace with your GA4 Measurement ID
         
-        atcButtons.forEach(button => {
-          button.addEventListener('click', function() {
-            gaLog('Add to cart button clicked');
-            sendAddToCartEvent();
-          });
-        });
+        // CSS Selectors (update based on your theme)
+        selectors: {
+          addToCartButton: '.product-form__buttons', // Add to cart button selector
+          checkoutButton: '.cart__checkout-button', // Checkout button selector
+          alternateCheckoutButton: '.Cart__Checkout' // Alternative checkout button (if any)
+        },
         
-        clearInterval(searchInterval);
-        gaLog('Add to cart tracking setup complete');
+        // Search Settings
+        elementSearchTimeout: 3000, // How long to search for elements (milliseconds)
+        searchInterval: 100, // How often to check for elements (milliseconds)
         
-      } else {
-        const elapsed = Date.now() - searchStartTime;
-        if (elapsed >= window.storeGA4Config.elementSearchTimeout) {
-          gaLog('Stopped searching for add to cart buttons after ' + (window.storeGA4Config.elementSearchTimeout/1000) + ' seconds');
-          clearInterval(searchInterval);
+        // Event Settings
+        preventRapidClicks: true,
+        rapidClickTimeout: 1000, // Reset processing flag after this time
+        
+        // Tracking Settings
+        trackPageViews: false, // Set to true if you want automatic page views
+        enableConsoleLogging: true, // Set to false to disable console logs
+        
+        // Store Information
+        storeName: '{{ shop.name }}', // Keep as liquid variable or replace with store name
+        currency: '{{ cart.currency.iso_code }}' // Keep as liquid variable or replace with currency code
+      };
+    </script>
+    <!-- =========================== -->
+    <!-- STORE CONFIGURATION END    -->
+    <!-- =========================== -->
+    <!-- Google Analytics 4 Integration Script -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ storeGA4Config.measurementId }}"></script>
+    <script>
+      // Initialize Google Analytics
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', window.storeGA4Config.measurementId, {
+        'send_page_view': window.storeGA4Config.trackPageViews
+      });
+      // Force all events to use correct measurement ID
+      gtag('set', 'send_to', [window.storeGA4Config.measurementId]);
+      // Enhanced eCommerce tracking
+      gtag('set', 'user_properties', {
+        'user_id': '{{ customer.id }}',
+        'customer_type': 'returning'
+      });
+      // Helper function for logging
+      function gaLog(message) {
+        if (window.storeGA4Config.enableConsoleLogging) {
+          console.log('[GA4] ' + message);
         }
       }
-    };
-    
-    searchForAddToCartButtons();
-    searchInterval = setInterval(searchForAddToCartButtons, window.storeGA4Config.searchInterval);
-    
-    function sendAddToCartEvent() {
-      gaLog('Sending add_to_cart event');
-      gtag('event', 'add_to_cart', {
+      // Track collection page views
+      {% if template.name == 'collection' %}
+      gtag('event', 'view_item_list', {
+        'send_to': window.storeGA4Config.measurementId,
+        'items': [
+          {% for product in collection.products limit:10 %}
+          {
+            'item_id': '{{ product.id }}',
+            'item_name': '{{ product.title | replace: "'", "\\'" }}',
+            'item_brand': '{{ product.vendor | replace: "'", "\\'" }}',
+            'item_category': '{{ collection.title | replace: "'", "\\'" }}',
+            'item_variant': '{{ product.selected_or_first_available_variant.title | replace: "'", "\\'" }}',
+            'price': {{ product.price | divided_by: 100.0 }}
+          }{% unless forloop.last %},{% endunless %}
+          {% endfor %}
+        ]
+      });
+      {% endif %}
+      // Track product page views
+      {% if template.name == 'product' %}
+      gtag('event', 'view_item', {
         'send_to': window.storeGA4Config.measurementId,
         'items': [
           {
@@ -575,133 +596,185 @@
           }
         ]
       });
-    }
-  });
-  {% endif %}
-  // Track cart page views
-  {% if template.name == 'cart' %}
-  gtag('event', 'view_cart', {
-    'send_to': window.storeGA4Config.measurementId,
-    'items': [
-      {% for item in cart.items %}
-      {
-        'item_id': '{{ item.product_id }}',
-        'item_name': '{{ item.product.title | replace: "'", "\\'" }}',
-        'item_brand': '{{ item.vendor | replace: "'", "\\'" }}',
-        'item_variant': '{{ item.variant.title | replace: "'", "\\'" }}',
-        'price': {{ item.price | divided_by: 100.0 }},
-        'quantity': {{ item.quantity }}
-      }{% unless forloop.last %},{% endunless %}
-      {% endfor %}
-    ]
-  });
-  {% endif %}
-  // Checkout tracking with element search
-  if (!window.checkoutEventAdded) {
-    window.checkoutEventAdded = true;
-    
-    let searchStartTime = Date.now();
-    let searchInterval;
-    let found = false;
-    let isProcessing = false; // Prevent rapid clicks
-    
-    // Function to search for checkout button
-    const searchForCheckoutButton = function() {
-      const checkoutButton = document.querySelector(window.storeGA4Config.selectors.checkoutButton);
-      
-      if (checkoutButton && !found) {
-        found = true;
-        console.log('Checkout button found, setting up GA tracking');
+      // Add to cart tracking with element search
+      document.addEventListener('DOMContentLoaded', function() {
+        gaLog('Setting up add to cart tracking');
         
-        // Add click event listener to the button
-        checkoutButton.addEventListener('click', function(e) {
-          // Prevent duplicate processing
-          if (isProcessing) {
-            console.log('Event already processing, ignoring duplicate...');
-            return;
+        let searchStartTime = Date.now();
+        let searchInterval;
+        let found = false;
+        
+        const searchForAddToCartButtons = function() {
+          const atcButtons = document.querySelectorAll(window.storeGA4Config.selectors.addToCartButton);
+          
+          if (atcButtons.length > 0 && !found) {
+            found = true;
+            gaLog('Found ' + atcButtons.length + ' add to cart buttons');
+            
+            atcButtons.forEach(button => {
+              button.addEventListener('click', function() {
+                gaLog('Add to cart button clicked');
+                sendAddToCartEvent();
+              });
+            });
+            
+            clearInterval(searchInterval);
+            gaLog('Add to cart tracking setup complete');
+            
+          } else {
+            const elapsed = Date.now() - searchStartTime;
+            if (elapsed >= window.storeGA4Config.elementSearchTimeout) {
+              gaLog('Stopped searching for add to cart buttons after ' + (window.storeGA4Config.elementSearchTimeout/1000) + ' seconds');
+              clearInterval(searchInterval);
+            }
           }
-          
-          isProcessing = true;
-          console.log('Checkout button clicked!');
-          
-          if (typeof gtag === 'undefined') {
-            console.warn('gtag not available');
-            isProcessing = false;
-            return;
-          }
-          
-          gtag('event', 'begin_checkout', {
+        };
+        
+        searchForAddToCartButtons();
+        searchInterval = setInterval(searchForAddToCartButtons, window.storeGA4Config.searchInterval);
+        
+        function sendAddToCartEvent() {
+          gaLog('Sending add_to_cart event');
+          gtag('event', 'add_to_cart', {
             'send_to': window.storeGA4Config.measurementId,
-            'currency': '{{ cart.currency.iso_code }}',
-            'value': {{ cart.total_price | divided_by: 100.0 }},
             'items': [
-              {% for item in cart.items %}
               {
-                'item_id': '{{ item.product_id }}',
-                'item_name': '{{ item.title | replace: "'", "\\'" }}',
-                'item_variant': '{{ item.variant.title | replace: "'", "\\'" }}',
-                'price': {{ item.price | divided_by: 100.0 }},
-                'quantity': {{ item.quantity }}
-              }{% unless forloop.last %},{% endunless %}
-              {% endfor %}
+                'item_id': '{{ product.id }}',
+                'item_name': '{{ product.title | replace: "'", "\\'" }}',
+                'item_brand': '{{ product.vendor | replace: "'", "\\'" }}',
+                'item_category': '{{ product.type | replace: "'", "\\'" }}',
+                'item_variant': '{{ product.selected_or_first_available_variant.title | replace: "'", "\\'" }}',
+                'price': {{ product.price | divided_by: 100.0 }}
+              }
             ]
           });
+        }
+      });
+      {% endif %}
+      // Track cart page views
+      {% if template.name == 'cart' %}
+      gtag('event', 'view_cart', {
+        'send_to': window.storeGA4Config.measurementId,
+        'items': [
+          {% for item in cart.items %}
+          {
+            'item_id': '{{ item.product_id }}',
+            'item_name': '{{ item.product.title | replace: "'", "\\'" }}',
+            'item_brand': '{{ item.vendor | replace: "'", "\\'" }}',
+            'item_variant': '{{ item.variant.title | replace: "'", "\\'" }}',
+            'price': {{ item.price | divided_by: 100.0 }},
+            'quantity': {{ item.quantity }}
+          }{% unless forloop.last %},{% endunless %}
+          {% endfor %}
+        ]
+      });
+      {% endif %}
+      // Checkout tracking with element search
+      if (!window.checkoutEventAdded) {
+        window.checkoutEventAdded = true;
+        
+        let searchStartTime = Date.now();
+        let searchInterval;
+        let found = false;
+        let isProcessing = false; // Prevent rapid clicks
+        
+        // Function to search for checkout button
+        const searchForCheckoutButton = function() {
+          const checkoutButton = document.querySelector(window.storeGA4Config.selectors.checkoutButton);
           
-          console.log('GA checkout event sent');
-          
-          // Reset processing flag after short delay
-          setTimeout(() => {
-            isProcessing = false;
-          }, 1000);
+          if (checkoutButton && !found) {
+            found = true;
+            console.log('Checkout button found, setting up GA tracking');
+            
+            // Add click event listener to the button
+            checkoutButton.addEventListener('click', function(e) {
+              // Prevent duplicate processing
+              if (isProcessing) {
+                console.log('Event already processing, ignoring duplicate...');
+                return;
+              }
+              
+              isProcessing = true;
+              console.log('Checkout button clicked!');
+              
+              if (typeof gtag === 'undefined') {
+                console.warn('gtag not available');
+                isProcessing = false;
+                return;
+              }
+              
+              gtag('event', 'begin_checkout', {
+                'send_to': window.storeGA4Config.measurementId,
+                'currency': '{{ cart.currency.iso_code }}',
+                'value': {{ cart.total_price | divided_by: 100.0 }},
+                'items': [
+                  {% for item in cart.items %}
+                  {
+                    'item_id': '{{ item.product_id }}',
+                    'item_name': '{{ item.title | replace: "'", "\\'" }}',
+                    'item_variant': '{{ item.variant.title | replace: "'", "\\'" }}',
+                    'price': {{ item.price | divided_by: 100.0 }},
+                    'quantity': {{ item.quantity }}
+                  }{% unless forloop.last %},{% endunless %}
+                  {% endfor %}
+                ]
+              });
+              
+              console.log('GA checkout event sent');
+              
+              // Reset processing flag after short delay
+              setTimeout(() => {
+                isProcessing = false;
+              }, 1000);
+            });
+            
+            // Stop searching
+            clearInterval(searchInterval);
+            console.log('Checkout tracking setup complete');
+            
+          } else {
+            // Check if 3 seconds have passed
+            const elapsed = Date.now() - searchStartTime;
+            if (elapsed >= 3000) {
+              console.log('Stopped searching for checkout button after 3 seconds - element not found');
+              clearInterval(searchInterval);
+            }
+          }
+        };
+        
+        // Start searching when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+          console.log('Starting checkout button search');
+          searchForCheckoutButton();
+          searchInterval = setInterval(searchForCheckoutButton, 100);
         });
         
-        // Stop searching
-        clearInterval(searchInterval);
-        console.log('Checkout tracking setup complete');
-        
       } else {
-        // Check if 3 seconds have passed
-        const elapsed = Date.now() - searchStartTime;
-        if (elapsed >= 3000) {
-          console.log('Stopped searching for checkout button after 3 seconds - element not found');
-          clearInterval(searchInterval);
-        }
+        console.log('Checkout tracking already initialized');
       }
-    };
-    
-    // Start searching when DOM is ready
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('Starting checkout button search');
-      searchForCheckoutButton();
-      searchInterval = setInterval(searchForCheckoutButton, 100);
-    });
-    
-  } else {
-    console.log('Checkout tracking already initialized');
-  }
-  // Track purchase events
-  {% if template == 'checkout/thankyou' or template contains 'thankyou' %}
-  gtag('event', 'purchase', {
-    'send_to': window.storeGA4Config.measurementId,
-    'transaction_id': '{{ checkout.order_id }}',
-    'affiliation': window.storeGA4Config.storeName,
-    'currency': '{{ checkout.currency }}',
-    'value': {{ checkout.total_price | divided_by: 100.0 }},
-    'tax': {{ checkout.tax_price | divided_by: 100.0 }},
-    'shipping': {{ checkout.shipping_price | divided_by: 100.0 }},
-    'items': [
-      {% for line_item in checkout.line_items %}
-      {
-        'item_id': '{{ line_item.product_id }}',
-        'item_name': '{{ line_item.title | replace: "'", "\\'" }}',
-        'item_variant': '{{ line_item.variant.title | replace: "'", "\\'" }}',
-        'price': {{ line_item.price | divided_by: 100.0 }},
-        'quantity': {{ line_item.quantity }}
-      }{% unless forloop.last %},{% endunless %}
-      {% endfor %}
-    ]
-  });
-  {% endif %}
-</script>
+      // Track purchase events
+      {% if template == 'checkout/thankyou' or template contains 'thankyou' %}
+      gtag('event', 'purchase', {
+        'send_to': window.storeGA4Config.measurementId,
+        'transaction_id': '{{ checkout.order_id }}',
+        'affiliation': window.storeGA4Config.storeName,
+        'currency': '{{ checkout.currency }}',
+        'value': {{ checkout.total_price | divided_by: 100.0 }},
+        'tax': {{ checkout.tax_price | divided_by: 100.0 }},
+        'shipping': {{ checkout.shipping_price | divided_by: 100.0 }},
+        'items': [
+          {% for line_item in checkout.line_items %}
+          {
+            'item_id': '{{ line_item.product_id }}',
+            'item_name': '{{ line_item.title | replace: "'", "\\'" }}',
+            'item_variant': '{{ line_item.variant.title | replace: "'", "\\'" }}',
+            'price': {{ line_item.price | divided_by: 100.0 }},
+            'quantity': {{ line_item.quantity }}
+          }{% unless forloop.last %},{% endunless %}
+          {% endfor %}
+        ]
+      });
+      {% endif %}
+    </script>
   </body>
 </html>
