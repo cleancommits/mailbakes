@@ -302,7 +302,7 @@
 
       if (this.headerIsAlwaysSticky) {
         this.header.classList.add('shopify-section-header-sticky');
-      };
+      }
 
       this.currentScrollTop = 0;
       this.preventReveal = false;
@@ -389,51 +389,106 @@
     }
 
     closeSearchModal() {
-      this.searchModal = this.searchModal || this.header.querySelector('details-modal');
-      if (this.searchModal && typeof this.searchModal.close === 'function') {
-        this.searchModal.close(false);
-      }
+      this.searchModals = this.searchModals || this.header.querySelectorAll('details-modal');
+      this.searchModals.forEach(modal => {
+        if (modal && typeof modal.close === 'function') {
+          modal.close(false);
+          if (modal.hasAttribute('open')) {
+            modal.removeAttribute('open');
+          }
+          const activeInput = modal.querySelector('input:focus');
+          if (activeInput) {
+            activeInput.blur();
+          }
+          console.log('Search modal closed via StickyHeader for modal:', modal);
+        }
+      });
     }
   }
 
   customElements.define('sticky-header', StickyHeader);
 
-  // Search modal click behavior
+  // Search modal click behavior with event delegation
   document.addEventListener('DOMContentLoaded', () => {
-    // Target search inputs
-    const searchInputs = document.querySelectorAll('#Search-In-Modal, #Search-In-Modal-1');
-    searchInputs.forEach(input => {
-      // Prevent hover from opening modal
-      input.addEventListener('mouseenter', (e) => {
+    // Log initial state
+    const initialInputs = document.querySelectorAll('.header__search input[id*="Search-In-Modal"]');
+    console.log('Initial search inputs found:', initialInputs.length, Array.from(initialInputs).map(input => input.id));
+
+    // Block hover events globally for search-related elements
+    document.addEventListener('mouseenter', e => {
+      if (e.target.closest('.header__search')) {
         e.preventDefault();
         e.stopPropagation();
-      });
-      input.addEventListener('mouseover', (e) => {
+        console.log('Blocked hover on element:', e.target.tagName, e.target.id || e.target.className);
+      }
+    }, true);
+
+    document.addEventListener('mouseover', e => {
+      if (e.target.closest('.header__search')) {
         e.preventDefault();
         e.stopPropagation();
-      });
-      // Open modal on click
-      input.addEventListener('click', (e) => {
+      }
+    }, true);
+
+    // Handle click to open modal
+    document.addEventListener('click', e => {
+      const input = e.target.closest('.header__search input[id*="Search-In-Modal"]');
+      if (input) {
         const modal = input.closest('details-modal');
         if (modal && typeof modal.open === 'function') {
           modal.open();
           input.focus();
+          console.log('Search modal opened for input:', input.id);
+        } else {
+          console.warn('No details-modal found for input:', input.id);
+        }
+      }
+    });
+
+    // Handle modal close and state reset
+    document.addEventListener('click', e => {
+      const closeButton = e.target.closest('.modal__close-button');
+      if (closeButton) {
+        const modal = closeButton.closest('details-modal');
+        if (modal) {
+          modal.close();
+          modal.removeAttribute('open');
+          const input = modal.querySelector('input[id*="Search-In-Modal"]');
+          if (input) {
+            input.blur();
+          }
+          console.log('Search modal closed via button for modal containing input:', input ? input.id : 'unknown');
+        }
+      }
+    });
+
+    document.addEventListener('toggle', e => {
+      const modal = e.target.closest('details-modal');
+      if (modal && !modal.hasAttribute('open')) {
+        const input = modal.querySelector('input[id*="Search-In-Modal"]');
+        if (input) {
+          input.blur();
+        }
+        modal.removeAttribute('open');
+        console.log('Search modal closed via toggle for modal containing input:', input ? input.id : 'unknown');
+      }
+    }, true);
+
+    // Log dynamic changes for debugging
+    const observer = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
+        if (mutation.addedNodes.length) {
+          mutation.addedNodes.forEach(node => {
+            if (node.nodeType === 1 && (node.matches('.header__search') || node.querySelector('.header__search'))) {
+              console.log('Detected new .header__search element, event listeners automatically applied via delegation');
+            }
+          });
         }
       });
     });
 
-    // Prevent hover on parent elements
-    const searchContainers = document.querySelectorAll('.header__search');
-    searchContainers.forEach(container => {
-      container.addEventListener('mouseenter', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      });
-      container.addEventListener('mouseover', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      });
-    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener('unload', () => observer.disconnect());
   });
 {% endjavascript %}
 
