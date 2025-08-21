@@ -1,3 +1,7 @@
+{% comment %}
+  Note: This is the modified main-product.liquid file with changes to add a popup for collecting shipping address and message on add-to-cart, redirecting to the cart page, and ensuring compatibility with Multiship.
+{% endcomment %}
+
 <product-info
   id="MainProduct-{{ section.id }}"
   class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}"
@@ -37,6 +41,52 @@
         padding-bottom: {{ section.settings.padding_bottom }}px;
       }
     }
+
+    .modal {
+      display: none;
+      z-index: 1000;
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.75);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 5px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .modal-content label {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .modal-content input, .modal-content textarea, .modal-content select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .modal-content button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      background-color: #000;
+      color: white;
+      cursor: pointer;
+    }
+    .modal-content button[type="button"] {
+      background-color: #ccc;
+      margin-left: 10px;
+    }
   {%- endstyle -%}
 
   <script src="{{ 'product-info.js' | asset_url }}" defer="defer"></script>
@@ -61,7 +111,7 @@
       viewedProducts = viewedProducts.slice(0, 7);
   
       localStorage.setItem("viewedProducts", JSON.stringify(viewedProducts));
-  });
+    });
   </script>
   
   {% if section.settings.image_zoom == 'hover' %}
@@ -112,12 +162,6 @@
                 <div class="stars-svg">
                   {{ 'stars5.svg' | inline_asset_content }}
                 </div>
-                {% comment %} <p
-                  class="product__text inline-richtext{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}"
-                  {{ block.shopify_attributes }}
-                >
-                  {{- block.settings.text -}}
-                </p> {% endcomment %}
               {%- when 'title' -%}
                 <div class="product__title" {{ block.shopify_attributes }}>
                   <h1>{{ product.title | escape }}</h1>
@@ -126,7 +170,6 @@
                       {{ product.title | escape }}
                     </h2>
                   </a>
-                  {% comment %} {{ 'icon-heart-btn.svg' | inline_asset_content }} {% endcomment %}
                 </div>
               {%- when 'price' -%}
                 <div id="price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
@@ -478,7 +521,6 @@
                     {{ block.settings.text | default: block.settings.page.title | escape }}
                   </button>
                 </modal-opener>
-                
               {%- when 'share' -%}
                 {% liquid
                   assign share_url = product.selected_variant.url | default: product.url | prepend: request.origin
@@ -488,19 +530,48 @@
                 {% render 'product-variant-picker', product: product, block: block, product_form_id: product_form_id %}
               {%- when 'buy_buttons' -%}
                 {% if section.settings.custom_buy_button %}
-                  <a href="#" class="button button-404" id="open_customizer_button" id="open_customizer_button" data-handle="{{ product.handle }}" data-product-id="{{ product.id }}" data-variant-id="{{ product.selected_or_first_available_variant.id }}">
+                  <a href="#" class="button button-404" id="open_customizer_button" data-handle="{{ product.handle }}" data-product-id="{{ product.id }}" data-variant-id="{{ product.selected_or_first_available_variant.id }}">
                     Customise
                     <img src="{{ 'icon-magic-wand.svg' | asset_url }}" alt="arrow-btn" width="18" height="18">
                   </a>
-                  {% else %}
-                    {%- render 'buy-buttons',
-                      block: block,
-                      product: product,
-                      product_form_id: product_form_id,
-                      section_id: section.id,
-                      show_pickup_availability: true
-                    -%}
+                {% else %}
+                  {%- render 'buy-buttons',
+                    block: block,
+                    product: product,
+                    product_form_id: product_form_id,
+                    section_id: section.id,
+                    show_pickup_availability: true
+                  -%}
                 {% endif %}
+                <div id="address-modal-{{ section.id }}" class="modal">
+                  <div class="modal-content">
+                    <h2>Add Recipient Details</h2>
+                    <form id="address-form-{{ section.id }}">
+                      <label for="recipient_name">Recipient Name</label>
+                      <input type="text" name="recipient_name" required>
+                      <label for="address_line1">Address Line 1</label>
+                      <input type="text" name="address_line1" required>
+                      <label for="address_line2">Address Line 2</label>
+                      <input type="text" name="address_line2">
+                      <label for="city">City</label>
+                      <input type="text" name="city" required>
+                      <label for="state">State/Province</label>
+                      <input type="text" name="state" required>
+                      <label for="zip">Zip/Postal Code</label>
+                      <input type="text" name="zip" required>
+                      <label for="country">Country</label>
+                      <input type="text" name="country" required>
+                      <label for="message">Personalized Message</label>
+                      <textarea name="message"></textarea>
+                      <label for="saved_addresses">Use Previous Address</label>
+                      <select name="saved_addresses" id="saved-addresses-{{ section.id }}">
+                        <option value="">New Address</option>
+                      </select>
+                      <button type="submit">Add to Cart</button>
+                      <button type="button" onclick="document.getElementById('address-modal-{{ section.id }}').style.display='none'">Cancel</button>
+                    </form>
+                  </div>
+                </div>
               {%- when 'rating' -%}
                 {%- if product.metafields.reviews.rating.value != blank -%}
                   <div class="rating-wrapper">
@@ -692,6 +763,130 @@
                 {% render 'icon-with-text', block: block %}
             {%- endcase -%}
           {%- endfor -%}
+
+          <div id="address-modal-{{ section.id }}" class="modal">
+            <div class="modal-content">
+              <h2>Add Recipient Details</h2>
+              <form id="address-form-{{ section.id }}">
+                <label for="recipient_name">Recipient Name</label>
+                <input type="text" name="recipient_name" required>
+                <label for="address_line1">Address Line 1</label>
+                <input type="text" name="address_line1" required>
+                <label for="address_line2">Address Line 2</label>
+                <input type="text" name="address_line2">
+                <label for="city">City</label>
+                <input type="text" name="city" required>
+                <label for="state">State/Province</label>
+                <input type="text" name="state" required>
+                <label for="zip">Zip/Postal Code</label>
+                <input type="text" name="zip" required>
+                <label for="country">Country</label>
+                <input type="text" name="country" required>
+                <label for="message">Personalized Message</label>
+                <textarea name="message"></textarea>
+                <label for="saved_addresses">Use Previous Address</label>
+                <select name="saved_addresses" id="saved-addresses-{{ section.id }}">
+                  <option value="">New Address</option>
+                </select>
+                <button type="submit">Add to Cart</button>
+                <button type="button" onclick="document.getElementById('address-modal-{{ section.id }}').style.display='none'">Cancel</button>
+              </form>
+            </div>
+          </div>
+
+          <script>
+            document.addEventListener('DOMContentLoaded', function () {
+              const form = document.getElementById('{{ product_form_id }}');
+              const modal = document.getElementById('address-modal-{{ section.id }}');
+              const addressForm = document.getElementById('address-form-{{ section.id }}');
+              const savedAddressesSelect = document.getElementById('saved-addresses-{{ section.id }}');
+
+              // Load saved addresses
+              let savedAddresses = JSON.parse(sessionStorage.getItem('addresses') || '[]');
+              savedAddresses.forEach((addr, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.text = `${addr.recipient_name}, ${addr.address_line1}`;
+                savedAddressesSelect.appendChild(option);
+              });
+
+              // Populate form with saved address
+              savedAddressesSelect.addEventListener('change', function () {
+                if (this.value !== '') {
+                  const addr = savedAddresses[this.value];
+                  addressForm.recipient_name.value = addr.recipient_name;
+                  addressForm.address_line1.value = addr.address_line1;
+                  addressForm.address_line2.value = addr.address_line2 || '';
+                  addressForm.city.value = addr.city;
+                  addressForm.state.value = addr.state;
+                  addressForm.zip.value = addr.zip;
+                  addressForm.country.value = addr.country;
+                  addressForm.message.value = addr.message || '';
+                } else {
+                  addressForm.reset();
+                }
+              });
+
+              // Intercept add-to-cart
+              form.querySelector('[name="add"]').addEventListener('click', function (e) {
+                e.preventDefault();
+                modal.style.display = 'flex';
+              });
+
+              // Handle form submission
+              addressForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const variantId = form.querySelector('[name="id"]').value;
+                const quantity = form.querySelector('[name="quantity"]').value;
+
+                // Save address to sessionStorage
+                const newAddress = {
+                  recipient_name: addressForm.recipient_name.value,
+                  address_line1: addressForm.address_line1.value,
+                  address_line2: addressForm.address_line2.value,
+                  city: addressForm.city.value,
+                  state: addressForm.state.value,
+                  zip: addressForm.zip.value,
+                  country: addressForm.country.value,
+                  message: addressForm.message.value
+                };
+                savedAddresses.push(newAddress);
+                sessionStorage.setItem('addresses', JSON.stringify(savedAddresses));
+
+                // Add to cart via AJAX
+                fetch('/cart/add.js', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    items: [{
+                      id: variantId,
+                      quantity: quantity,
+                      properties: {
+                        '_recipient_name': newAddress.recipient_name,
+                        '_address_line1': newAddress.address_line1,
+                        '_address_line2': newAddress.address_line2,
+                        '_city': newAddress.city,
+                        '_state': newAddress.state,
+                        '_zip': newAddress.zip,
+                        '_country': newAddress.country,
+                        '_message': newAddress.message
+                      }
+                    }]
+                  })
+                })
+                .then(response => response.json())
+                .then(() => {
+                  modal.style.display = 'none';
+                  window.location.href = '/cart'; // Redirect to cart
+                })
+                .catch(error => {
+                  console.error('Error adding to cart:', error);
+                  alert('Failed to add item to cart. Please try again.');
+                });
+              });
+            });
+          </script>
+
           <a href="{{ product.url }}" class="link product__view-details animate-arrow">
             {{ 'products.product.view_full_details' | t }}
             {{- 'icon-arrow.svg' | inline_asset_content -}}
@@ -702,7 +897,7 @@
 
     {% render 'product-media-modal', variant_images: variant_images %}
 
-    {% assign popups = section.blocks | where: 'type', 'popup' %}
+    {% assign popups = section.blocks | where: 'type', 'popup pelas' %}
     {%- for block in popups -%}
       <modal-dialog id="PopupModal-{{ block.id }}" class="product-popup-modal" {{ block.shopify_attributes }}>
         <div
@@ -755,7 +950,6 @@
 </product-info>
 
 {% render 'customiser' %}
-
 
 {% schema %}
 {
