@@ -1,0 +1,144 @@
+{{ 'main-shop-collections.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  {% for collection in section.blocks %}
+    .large-image.container-{{ forloop.index }} {
+      background-image: url("{{ collection.settings.heading_collection.image | image_url: height: 1000 }}");
+      background-position: {{ collection.settings.image_v_position }} center;
+    }
+  {% endfor %}
+{%- endstyle -%}
+
+<div class="shop-collections page-width">
+  {% assign total = section.blocks.size %}
+  {% assign layout_sizes = '' %}
+  {% assign matched = false %}
+
+  {% assign max_fives = total | divided_by: 5 %}
+  {% for fives in (0..max_fives) reversed %}
+    {% assign fives_count = fives %}
+    {% assign fives_used = fives_count | times: 5 %}
+    {% assign remaining_after_5 = total | minus: fives_used %}
+
+    {% assign max_fours = remaining_after_5 | divided_by: 4 %}
+    {% for fours in (0..max_fours) reversed %}
+      {% assign fours_count = fours %}
+      {% assign used_4 = fours_count | times: 4 %}
+      {% assign used = fives_used | plus: used_4 %}
+      {% assign remaining_after_4 = total | minus: used %}
+      {% assign mod = remaining_after_4 | modulo: 3 %}
+
+      {% if mod == 0 %}
+        {% assign threes_count = remaining_after_4 | divided_by: 3 %}
+
+        {% assign layout = '' %}
+        {% for i in (1..fives_count) %}
+          {% assign layout = layout | append: '5,' %}
+        {% endfor %}
+        {% for i in (1..fours_count) %}
+          {% assign layout = layout | append: '4,' %}
+        {% endfor %}
+        {% for i in (1..threes_count) %}
+          {% assign layout = layout | append: '3,' %}
+        {% endfor %}
+
+        {% assign last_char = layout | slice: layout.size | minus: 1, 1 %}
+
+        {% if last_char == ',' %}
+          {% assign layout_sizes = layout | slice: 0, layout.size | minus: 1 %}
+        {% else %}
+          {% assign layout_sizes = layout %}
+        {% endif %}
+        {% assign matched = true %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+    {% if matched %}
+      {% break %}
+    {% endif %}
+  {% endfor %}
+
+  {% assign layout_chunks = layout_sizes | split: ',' %}
+  {% assign index = 0 %}
+
+  {% if total > 0 %}
+    {% for size in layout_chunks %}
+      {% assign size_int = size | plus: 0 %}
+      {% assign last_index = size_int | minus: 1 %}
+
+      {% if size_int > 0 %}
+        <div class="heading-collections bento-grid bento-{{ size_int }}">
+          {% for i in (0..last_index) %}
+            {% assign current_index = index | plus: i %}
+            {% assign block = section.blocks[current_index] %}
+            <div class="item-{{ i | plus: 1 }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+              <div class="large-image animate-arrow container-{{ current_index | plus: 1 }} {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+                <a href="{{ block.settings.heading_collection.url }}">
+                  <h3 class="category-title">
+                    {{ block.settings.heading_collection.title }}
+                  </h3>
+                  {%- assign item_index = current_index | plus: 1 -%}
+                  {% comment %} <div class="center collection__view-all{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+                    <a
+                      href="{{ block.settings.heading_collection.url }}"
+                      class="link underlined-link view-all-link"
+                      aria-label="{{ 'sections.featured_collection.view_all_label' | t: collection_name: block.settings.heading_collection.title | escape }}"
+                    >
+                      {{ 'sections.featured_collection.view_all' | t }}
+                      {{ 'icon-arrow-link.svg' | inline_asset_content }}
+                    </a>
+                  </div> {% endcomment %}
+                </a>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        {% assign index = index | plus: size_int %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+</div>
+{% schema %}
+{
+  "name": "t:sections.main-shop-collections.name",
+  "class": "section",
+  "blocks": [
+    {
+      "type": "heading_collections",
+      "name": "t:sections.main-shop-collections.blocks.collection.settings.name",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "heading_collection",
+          "label": "t:sections.main-shop-collections.blocks.collection.settings.name"
+        },
+        {
+          "type": "select",
+          "id": "image_v_position",
+          "label": "Image vertical position",
+          "options": [
+            {
+              "value": "top",
+              "label": "Top"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "bottom",
+              "label": "Bottom"
+            }
+          ],
+          "default": "bottom"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.main-shop-collections.presets.name"
+    }
+  ]
+}
+{% endschema %}
