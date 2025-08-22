@@ -63,6 +63,219 @@
       localStorage.setItem("viewedProducts", JSON.stringify(viewedProducts));
   });
   </script>
+
+  <style>
+    .product-popup-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .product-popup-modal.active {
+      display: flex;
+    }
+    .product-popup-modal__content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .product-popup-modal__toggle {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+    .field {
+      margin-bottom: 1rem;
+    }
+    .field label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+    .field input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .field input:required:invalid {
+      border-color: red;
+    }
+    .field select {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .button {
+      background: #000;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+    }
+    .button:hover {
+      background: #333;
+    }
+    .error-message {
+      color: red;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+  </style>
+
+  <modal-dialog id="ShippingModal" class="product-popup-modal">
+    <div role="dialog" aria-label="Enter UK Shipping Address" aria-modal="true" class="product-popup-modal__content" tabindex="-1">
+      <button id="ModalClose-Shipping" type="button" class="product-popup-modal__toggle" aria-label="{{ 'accessibility.close' | t }}">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18M6 6L18 18" stroke="black" stroke-width="2"/>
+        </svg>
+      </button>
+      <div class="product-popup-modal__content-info">
+        <h2 class="h2">Enter Your UK Shipping Address</h2>
+        <form id="shipping-form">
+          <div class="field">
+            <label for="shipping-name">Full Name</label>
+            <input type="text" id="shipping-name" name="name" required placeholder="e.g., John Doe">
+          </div>
+          <div class="field">
+            <label for="shipping-address1">Address Line 1</label>
+            <input type="text" id="shipping-address1" name="address1" required placeholder="e.g., 123 High Street">
+          </div>
+          <div class="field">
+            <label for="shipping-address2">Address Line 2 (Optional)</label>
+            <input type="text" id="shipping-address2" name="address2" placeholder="e.g., Apartment 4B">
+          </div>
+          <div class="field">
+            <label for="shipping-city">City</label>
+            <input type="text" id="shipping-city" name="city" required placeholder="e.g., London">
+          </div>
+          <div class="field">
+            <label for="shipping-postcode">Postcode</label>
+            <input type="text" id="shipping-postcode" name="postcode" required placeholder="e.g., SW1A 1AA">
+            <div id="postcode-error" class="error-message">Please enter a valid UK postcode (e.g., SW1A 1AA).</div>
+          </div>
+          <div class="field">
+            <label for="shipping-country">Country</label>
+            <select id="shipping-country" name="country" required>
+              <option value="United Kingdom" selected>United Kingdom</option>
+            </select>
+          </div>
+          <button type="submit" class="button">Save and Add to Cart</button>
+        </form>
+      </div>
+    </div>
+  </modal-dialog>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const productForm = document.querySelector('#product-form-{{ section.id }}');
+      const addToCartButton = productForm ? productForm.querySelector('#ProductSubmitButton-{{ section.id }}') : null;
+      const shippingModal = document.querySelector('#ShippingModal');
+      const shippingForm = document.querySelector('#shipping-form');
+      const modalClose = document.querySelector('#ModalClose-Shipping');
+      const postcodeInput = document.querySelector('#shipping-postcode');
+      const postcodeError = document.querySelector('#postcode-error');
+
+      // Debugging: Log missing elements
+      if (!productForm) console.error('Product form not found for ID: #product-form-{{ section.id }}');
+      if (!addToCartButton) console.error('Add to Cart button not found for ID: #ProductSubmitButton-{{ section.id }}');
+      if (!shippingModal) console.error('Shipping modal not found');
+      if (!shippingForm) console.error('Shipping form not found');
+
+      // Load saved address from localStorage if exists
+      const savedAddress = JSON.parse(localStorage.getItem('ukShippingAddress'));
+      if (savedAddress) {
+        Object.keys(savedAddress).forEach(key => {
+          const input = document.querySelector(`#shipping-${key}`);
+          if (input) input.value = savedAddress[key];
+        });
+      }
+
+      // UK postcode regex validation
+      const ukPostcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$/;
+
+      // Validate postcode on input
+      if (postcodeInput) {
+        postcodeInput.addEventListener('input', function () {
+          const isValid = ukPostcodeRegex.test(postcodeInput.value);
+          postcodeError.style.display = isValid || !postcodeInput.value ? 'none' : 'block';
+        });
+      }
+
+      // Intercept add to cart click
+      if (addToCartButton) {
+        addToCartButton.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (shippingModal) {
+            shippingModal.classList.add('active');
+          } else {
+            console.error('Shipping modal element not found');
+          }
+        });
+      }
+
+      // Handle shipping form submit
+      if (shippingForm) {
+        shippingForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          const postcode = postcodeInput.value;
+          if (!ukPostcodeRegex.test(postcode)) {
+            postcodeError.style.display = 'block';
+            return;
+          }
+
+          const formData = new FormData(shippingForm);
+          const address = {};
+          formData.forEach((value, key) => { address[key] = value; });
+
+          // Save to localStorage for reuse
+          localStorage.setItem('ukShippingAddress', JSON.stringify(address));
+
+          // Create a single string for the address
+          const addressString = `${address.name}, ${address.address1}${address.address2 ? ', ' + address.address2 : ''}, ${address.city}, ${address.postcode}, ${address.country}`;
+
+          // Add hidden input for line item property
+          let lineItemInput = productForm.querySelector('input[name="properties[UK Shipping Address]"]');
+          if (!lineItemInput) {
+            lineItemInput = document.createElement('input');
+            lineItemInput.type = 'hidden';
+            lineItemInput.name = 'properties[UK Shipping Address]';
+            productForm.appendChild(lineItemInput);
+          }
+          lineItemInput.value = addressString;
+
+          // Close modal and submit product form
+          shippingModal.classList.remove('active');
+          productForm.submit();
+        });
+      }
+
+      // Close modal
+      if (modalClose) {
+        modalClose.addEventListener('click', function () {
+          shippingModal.classList.remove('active');
+        });
+      }
+    });
+  </script>
   
   {% if section.settings.image_zoom == 'hover' %}
     <script id="EnableZoomOnHover-main" src="{{ 'magnify.js' | asset_url }}" defer="defer"></script>
