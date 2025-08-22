@@ -1,5 +1,5 @@
 {% comment %}
-  Renders product buy-buttons.
+  Renders product buy-buttons with shipping address modal integration.
   Accepts:
   - product: {Object} product object.
   - block: {Object} passing the block information.
@@ -72,7 +72,7 @@
           -%}
           <button
             id="ProductSubmitButton-{{ section_id }}"
-            type="submit"
+            type="button"
             name="add"
             class="product-form__submit button button--full-width {% if show_dynamic_checkout %}button--secondary{% else %}button--primary{% endif %}"
             {% if product.selected_or_first_available_variant.available == false
@@ -103,7 +103,7 @@
     <div class="product-form">
       <div class="product-form__buttons form">
         <button
-          type="submit"
+          type="button"
           name="add"
           class="product-form__submit button button--full-width button--primary"
           disabled

@@ -24,7 +24,10 @@ if (!customElements.get('product-form')) {
         this.hideErrors = this.dataset.hideErrors === 'true';
 
         // UK postcode regex validation
-        this.ukPostcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$/;
+        this.ukPostcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$/i;
+
+        // Store address data in memory (session-based)
+        this.savedAddress = null;
 
         // Initialize modal-related functionality
         this.initializeModal();
@@ -37,25 +40,25 @@ if (!customElements.get('product-form')) {
         if (!this.shippingModal) console.error('Shipping modal not found');
         if (!this.shippingForm) console.error('Shipping form not found');
 
-        // Load saved address from localStorage if exists
+        // Load saved address from session if exists
+        if (this.shippingForm && this.savedAddress) {
+          Object.keys(this.savedAddress).forEach(key => {
+            const input = this.shippingForm.querySelector(`#shipping-${key}`);
+            if (input) input.value = this.savedAddress[key];
+          });
+        }
+
+        // Validate postcode on input
+        if (this.postcodeInput) {
+          this.postcodeInput.addEventListener('input', () => {
+            const postcode = this.postcodeInput.value.trim().toUpperCase();
+            const isValid = this.ukPostcodeRegex.test(postcode);
+            this.postcodeError.style.display = isValid || !postcode ? 'none' : 'block';
+          });
+        }
+
+        // Handle shipping form submit
         if (this.shippingForm) {
-          const savedAddress = JSON.parse(localStorage.getItem('ukShippingAddress'));
-          if (savedAddress) {
-            Object.keys(savedAddress).forEach(key => {
-              const input = this.shippingForm.querySelector(`#shipping-${key}`);
-              if (input) input.value = savedAddress[key];
-            });
-          }
-
-          // Validate postcode on input
-          if (this.postcodeInput) {
-            this.postcodeInput.addEventListener('input', () => {
-              const isValid = this.ukPostcodeRegex.test(this.postcodeInput.value);
-              this.postcodeError.style.display = isValid || !this.postcodeInput.value ? 'none' : 'block';
-            });
-          }
-
-          // Handle shipping form submit
           this.shippingForm.addEventListener('submit', this.onShippingFormSubmit.bind(this));
         }
 
@@ -63,6 +66,15 @@ if (!customElements.get('product-form')) {
         if (this.modalClose) {
           this.modalClose.addEventListener('click', () => {
             this.shippingModal.classList.remove('active');
+          });
+        }
+
+        // Close modal when clicking outside
+        if (this.shippingModal) {
+          this.shippingModal.addEventListener('click', (e) => {
+            if (e.target === this.shippingModal) {
+              this.shippingModal.classList.remove('active');
+            }
           });
         }
 
@@ -80,8 +92,20 @@ if (!customElements.get('product-form')) {
         evt.preventDefault();
         evt.stopPropagation();
         console.log('Add to Cart button clicked, opening modal');
+        
+        // Check if button is disabled
+        if (this.submitButton.getAttribute('aria-disabled') === 'true' || 
+            this.submitButton.hasAttribute('disabled')) {
+          return;
+        }
+
         if (this.shippingModal) {
           this.shippingModal.classList.add('active');
+          // Focus on first input for accessibility
+          const firstInput = this.shippingForm.querySelector('input[type="text"]');
+          if (firstInput) {
+            setTimeout(() => firstInput.focus(), 100);
+          }
         } else {
           console.error('Shipping modal element not found');
         }
@@ -89,18 +113,25 @@ if (!customElements.get('product-form')) {
 
       onShippingFormSubmit(evt) {
         evt.preventDefault();
-        const postcode = this.postcodeInput.value;
+        
+        const postcode = this.postcodeInput.value.trim().toUpperCase();
         if (!this.ukPostcodeRegex.test(postcode)) {
           this.postcodeError.style.display = 'block';
+          this.postcodeInput.focus();
           return;
         }
 
+        // Hide postcode error if validation passes
+        this.postcodeError.style.display = 'none';
+
         const formData = new FormData(this.shippingForm);
         const address = {};
-        formData.forEach((value, key) => { address[key] = value; });
+        formData.forEach((value, key) => { 
+          address[key.replace('shipping-', '')] = value.trim(); 
+        });
 
-        // Save to localStorage for reuse
-        localStorage.setItem('ukShippingAddress', JSON.stringify(address));
+        // Save address in memory for this session
+        this.savedAddress = address;
 
         // Create a single string for the address
         const addressString = `${address.name}, ${address.address1}${address.address2 ? ', ' + address.address2 : ''}, ${address.city}, ${address.postcode}, ${address.country}`;
