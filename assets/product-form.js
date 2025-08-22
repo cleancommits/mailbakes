@@ -6,26 +6,128 @@ if (!customElements.get('product-form')) {
         super();
 
         this.form = this.querySelector('form');
+        this.variantIdInput = this.form.querySelector('[name=id]');
         this.variantIdInput.disabled = false;
-        this.form.addEventListener('submit', this.onSubmitHandler.bind(this));
-        this.cart = document.querySelector('cart-notification') || document.querySelector('cart-drawer');
         this.submitButton = this.querySelector('[type="submit"]');
         this.submitButtonText = this.submitButton.querySelector('span');
+        this.cart = document.querySelector('cart-notification') || document.querySelector('cart-drawer');
+        this.shippingModal = document.querySelector('#ShippingModal');
+        this.shippingForm = document.querySelector('#shipping-form');
+        this.modalClose = document.querySelector('#ModalClose-Shipping');
+        this.postcodeInput = document.querySelector('#shipping-postcode');
+        this.postcodeError = document.querySelector('#postcode-error');
 
-        if (document.querySelector('cart-drawer')) this.submitButton.setAttribute('aria-haspopup', 'dialog');
+        if (this.cart) {
+          this.submitButton.setAttribute('aria-haspopup', 'dialog');
+        }
 
         this.hideErrors = this.dataset.hideErrors === 'true';
+
+        // UK postcode regex validation
+        this.ukPostcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$/;
+
+        // Initialize modal-related functionality
+        this.initializeModal();
       }
 
-      onSubmitHandler(evt) {
+      initializeModal() {
+        // Debugging: Log missing elements
+        if (!this.form) console.error('Product form not found');
+        if (!this.submitButton) console.error('Add to Cart button not found');
+        if (!this.shippingModal) console.error('Shipping modal not found');
+        if (!this.shippingForm) console.error('Shipping form not found');
+
+        // Load saved address from localStorage if exists
+        if (this.shippingForm) {
+          const savedAddress = JSON.parse(localStorage.getItem('ukShippingAddress'));
+          if (savedAddress) {
+            Object.keys(savedAddress).forEach(key => {
+              const input = this.shippingForm.querySelector(`#shipping-${key}`);
+              if (input) input.value = savedAddress[key];
+            });
+          }
+
+          // Validate postcode on input
+          if (this.postcodeInput) {
+            this.postcodeInput.addEventListener('input', () => {
+              const isValid = this.ukPostcodeRegex.test(this.postcodeInput.value);
+              this.postcodeError.style.display = isValid || !this.postcodeInput.value ? 'none' : 'block';
+            });
+          }
+
+          // Handle shipping form submit
+          this.shippingForm.addEventListener('submit', this.onShippingFormSubmit.bind(this));
+        }
+
+        // Close modal
+        if (this.modalClose) {
+          this.modalClose.addEventListener('click', () => {
+            this.shippingModal.classList.remove('active');
+          });
+        }
+
+        // Intercept submit button click to show modal
+        if (this.submitButton) {
+          // Clone button to remove existing listeners
+          const newButton = this.submitButton.cloneNode(true);
+          this.submitButton.parentNode.replaceChild(newButton, this.submitButton);
+          this.submitButton = newButton;
+          this.submitButton.addEventListener('click', this.onButtonClick.bind(this));
+        }
+      }
+
+      onButtonClick(evt) {
         evt.preventDefault();
+        evt.stopPropagation();
+        console.log('Add to Cart button clicked, opening modal');
+        if (this.shippingModal) {
+          this.shippingModal.classList.add('active');
+        } else {
+          console.error('Shipping modal element not found');
+        }
+      }
+
+      onShippingFormSubmit(evt) {
+        evt.preventDefault();
+        const postcode = this.postcodeInput.value;
+        if (!this.ukPostcodeRegex.test(postcode)) {
+          this.postcodeError.style.display = 'block';
+          return;
+        }
+
+        const formData = new FormData(this.shippingForm);
+        const address = {};
+        formData.forEach((value, key) => { address[key] = value; });
+
+        // Save to localStorage for reuse
+        localStorage.setItem('ukShippingAddress', JSON.stringify(address));
+
+        // Create a single string for the address
+        const addressString = `${address.name}, ${address.address1}${address.address2 ? ', ' + address.address2 : ''}, ${address.city}, ${address.postcode}, ${address.country}`;
+
+        // Add hidden input for line item property
+        let lineItemInput = this.form.querySelector('input[name="properties[UK Shipping Address]"]');
+        if (!lineItemInput) {
+          lineItemInput = document.createElement('input');
+          lineItemInput.type = 'hidden';
+          lineItemInput.name = 'properties[UK Shipping Address]';
+          this.form.appendChild(lineItemInput);
+        }
+        lineItemInput.value = addressString;
+
+        // Close modal and trigger form submission
+        this.shippingModal.classList.remove('active');
+        this.onSubmitHandler();
+      }
+
+      onSubmitHandler() {
         if (this.submitButton.getAttribute('aria-disabled') === 'true') return;
 
         this.handleErrorMessage();
 
         this.submitButton.setAttribute('aria-disabled', true);
         this.submitButton.classList.add('loading');
-        this.querySelector('.loading__spinner').classList.remove('hidden');
+        this.querySelector('.loading__spinner')?.classList.remove('hidden');
 
         const config = fetchConfig('javascript');
         config.headers['X-Requested-With'] = 'XMLHttpRequest';
@@ -66,12 +168,13 @@ if (!customElements.get('product-form')) {
               return;
             }
 
-            if (!this.error)
+            if (!this.error) {
               publish(PUB_SUB_EVENTS.cartUpdate, {
                 source: 'product-form',
                 productVariantId: formData.get('id'),
                 cartData: response,
               });
+            }
             this.error = false;
             const quickAddModal = this.closest('quick-add-modal');
             if (quickAddModal) {
@@ -94,9 +197,11 @@ if (!customElements.get('product-form')) {
           })
           .finally(() => {
             this.submitButton.classList.remove('loading');
-            if (this.cart && this.cart.classList.contains('is-empty')) this.cart.classList.remove('is-empty');
+            if (this.cart && this.cart.classList.contains('is-empty')) {
+              this.cart.classList.remove('is-empty');
+            }
             if (!this.error) this.submitButton.removeAttribute('aria-disabled');
-            this.querySelector('.loading__spinner').classList.add('hidden');
+            this.querySelector('.loading__spinner')?.classList.add('hidden');
           });
       }
 
