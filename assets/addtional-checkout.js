@@ -47,13 +47,13 @@
 
         // Map line item properties to checkout form fields
         const fieldMappings = {
-          'checkout_shipping_address_first_name': properties['Shipping First Name'],
-          'checkout_shipping_address_last_name': properties['Shipping Last Name'],
-          'checkout_shipping_address_address1': properties['Shipping Address Line 1'],
-          'checkout_shipping_address_address2': properties['Shipping Address Line 2'],
-          'checkout_shipping_address_city': properties['Shipping Town/City'],
-          'checkout_shipping_address_zip': properties['Shipping Postcode'],
-          'checkout_shipping_address_phone': properties['Shipping Phone Number']
+          'TextField0': properties['Shipping First Name'],
+          'TextField1': properties['Shipping Last Name'],
+          'shipping-address1': properties['Shipping Address Line 1'],
+          'TextField2': properties['Shipping Address Line 2'],
+          'TextField3': properties['Shipping Town/City'],
+          'TextField4': properties['Shipping Postcode'],
+          'TextField5': properties['Shipping Phone Number']
         };
 
         // Populate form fields
