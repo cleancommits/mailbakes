@@ -1577,12 +1577,37 @@ a.product__text {
   margin-bottom: 1rem;
 }
 
+.product-form .field {
+  margin-bottom: 1rem;
+}
+
+.product-form .field--inline {
+  display: flex;
+  gap: 1.6rem;
+  flex-wrap: wrap;
+}
+
+.product-form .field--inline .field__inner {
+  flex: 1;
+  min-width: 0;
+}
+
+.product-form .field--inline .form__label,
+.product-form .field--inline .input__field {
+  width: 100%;
+}
+
 .product-form .form__label {
   font-size: 1.4rem;
   line-height: calc(1 + 0.5 / var(--font-body-scale));
   color: #1D1D1F;
   margin-bottom: 0.6rem;
   display: block;
+}
+
+.product-form .required-asterisk {
+  color: #dc376e;
+  font-weight: 700;
 }
 
 .product-form .input__field {

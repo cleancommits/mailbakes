@@ -61,22 +61,35 @@
           <fieldset style="border: none; padding: 0; width: 100%">
             <legend style="font-size: 2.4rem; margin-bottom: 1rem;">Shipping Address</legend>
 
-            <!-- Full Name (required) -->
-            <div style="margin-bottom: 1rem;">
-              <label for="shipping-full-name" class="form__label">Full Name  <span class="required-asterisk">*</span></label>
-              <input
-                type="text"
-                id="shipping-full-name"
-                name="properties[Shipping Full Name]"
-                placeholder="e.g., John Smith"
-                class="input__field"
-                required
-              >
+            <!-- First Name and Last Name (required, inline) -->
+            <div class="field--inline" style="width: 100%; margin-bottom: 1rem">
+              <div class="field__inner">
+                <label for="shipping-first-name" class="form__label">First Name <span class="required-asterisk">*</span></label>
+                <input
+                  type="text"
+                  id="shipping-first-name"
+                  name="properties[Shipping First Name]"
+                  placeholder="e.g., John"
+                  class="input__field"
+                  required
+                >
+              </div>
+              <div class="field__inner">
+                <label for="shipping-last-name" class="form__label">Last Name <span class="required-asterisk">*</span></label>
+                <input
+                  type="text"
+                  id="shipping-last-name"
+                  name="properties[Shipping Last Name]"
+                  placeholder="e.g., Smith"
+                  class="input__field"
+                  required
+                >
+              </div>
             </div>
 
             <!-- Address Line 1 (required) -->
-            <div style="margin-bottom: 1rem;">
-              <label for="shipping-address-line1" class="form__label">Address Line 1  <span class="required-asterisk">*</span></label>
+            <div style="margin-bottom: 1rem; margin-top: 1rem;">
+              <label for="shipping-address-line1" class="form__label">Address Line 1 <span class="required-asterisk">*</span></label>
               <input
                 type="text"
                 id="shipping-address-line1"
@@ -101,7 +114,7 @@
 
             <!-- Town/City (required) -->
             <div style="margin-bottom: 1rem;">
-              <label for="shipping-town-city" class="form__label">City  <span class="required-asterisk">*</span></label>
+              <label for="shipping-town-city" class="form__label">City <span class="required-asterisk">*</span></label>
               <input
                 type="text"
                 id="shipping-town-city"
@@ -114,7 +127,7 @@
 
             <!-- Postcode (required) -->
             <div style="margin-bottom: 1rem;">
-              <label for="shipping-postcode" class="form__label">Postcode  <span class="required-asterisk">*</span></label>
+              <label for="shipping-postcode" class="form__label">Postcode <span class="required-asterisk">*</span></label>
               <input
                 type="text"
                 id="shipping-postcode"
@@ -127,7 +140,7 @@
 
             <!-- Phone Number (required) -->
             <div style="margin-bottom: 1rem;">
-              <label for="shipping-phone" class="form__label">Phone Number  <span class="required-asterisk">*</span></label>
+              <label for="shipping-phone" class="form__label">Phone Number <span class="required-asterisk">*</span></label>
               <input
                 type="tel"
                 id="shipping-phone"
