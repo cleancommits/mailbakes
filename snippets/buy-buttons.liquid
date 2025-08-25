@@ -58,12 +58,12 @@
 
         <!-- Always-visible UK Shipping Address Form -->
         <div style="margin-top: 1rem;">
-          <fieldset style="border: none; padding: 0;">
-            <legend style="font-size: 1.2rem; margin-bottom: 0.5rem;">UK Shipping Address</legend>
+          <fieldset style="border: none; padding: 0; width: 100%">
+            <legend style="font-size: 2.4rem; margin-bottom: 1rem;">Shipping Address</legend>
 
             <!-- Full Name (required) -->
             <div style="margin-bottom: 1rem;">
-              <label for="shipping-full-name" class="form__label">Full Name</label>
+              <label for="shipping-full-name" class="form__label">Full Name  <span class="required-asterisk">*</span></label>
               <input
                 type="text"
                 id="shipping-full-name"
@@ -76,7 +76,7 @@
 
             <!-- Address Line 1 (required) -->
             <div style="margin-bottom: 1rem;">
-              <label for="shipping-address-line1" class="form__label">Address Line 1</label>
+              <label for="shipping-address-line1" class="form__label">Address Line 1  <span class="required-asterisk">*</span></label>
               <input
                 type="text"
                 id="shipping-address-line1"
@@ -89,7 +89,7 @@
 
             <!-- Address Line 2 (optional) -->
             <div style="margin-bottom: 1rem;">
-              <label for="shipping-address-line2" class="form__label">Address Line 2 (optional)</label>
+              <label for="shipping-address-line2" class="form__label">Address Line 2</label>
               <input
                 type="text"
                 id="shipping-address-line2"
@@ -101,7 +101,7 @@
 
             <!-- Town/City (required) -->
             <div style="margin-bottom: 1rem;">
-              <label for="shipping-town-city" class="form__label">Town/City</label>
+              <label for="shipping-town-city" class="form__label">Town/City  <span class="required-asterisk">*</span></label>
               <input
                 type="text"
                 id="shipping-town-city"
@@ -114,7 +114,7 @@
 
             <!-- County (optional) -->
             <div style="margin-bottom: 1rem;">
-              <label for="shipping-county" class="form__label">County (optional)</label>
+              <label for="shipping-county" class="form__label">County</label>
               <input
                 type="text"
                 id="shipping-county"
@@ -126,7 +126,7 @@
 
             <!-- Postcode (required) -->
             <div style="margin-bottom: 1rem;">
-              <label for="shipping-postcode" class="form__label">Postcode</label>
+              <label for="shipping-postcode" class="form__label">Postcode  <span class="required-asterisk">*</span></label>
               <input
                 type="text"
                 id="shipping-postcode"
@@ -139,7 +139,7 @@
 
             <!-- Country (required, pre-filled as UK) -->
             <div style="margin-bottom: 1rem;">
-              <label for="shipping-country" class="form__label">Country</label>
+              <label for="shipping-country" class="form__label">Country  <span class="required-asterisk">*</span></label>
               <input
                 type="text"
                 id="shipping-country"
@@ -152,7 +152,7 @@
 
             <!-- Phone Number (required) -->
             <div style="margin-bottom: 1rem;">
-              <label for="shipping-phone" class="form__label">Phone Number</label>
+              <label for="shipping-phone" class="form__label">Phone Number  <span class="required-asterisk">*</span></label>
               <input
                 type="tel"
                 id="shipping-phone"
@@ -183,6 +183,7 @@
             id="ProductSubmitButton-{{ section_id }}"
             type="submit"
             name="add"
+            style="width: 100% !important"
             class="product-form__submit button button--full-width {% if show_dynamic_checkout %}button--secondary{% else %}button--primary{% endif %}"
             {% if product.selected_or_first_available_variant.available == false
               or quantity_rule_soldout
