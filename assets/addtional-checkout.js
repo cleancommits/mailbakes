@@ -36,4 +36,34 @@
     window._upssqueue.push(arguments);
   };
   window._upssClient('init');
+
+  // Prefill shipping address from line item properties
+  document.addEventListener('DOMContentLoaded', function () {
+    fetch('/cart.js')
+      .then(response => response.json())
+      .then(cart => {
+        // Get the first line item's properties (assuming one product for simplicity)
+        const properties = cart.items[0]?.properties || {};
+
+        // Map line item properties to checkout form fields
+        const fieldMappings = {
+          'checkout_shipping_address_first_name': properties['Shipping First Name'],
+          'checkout_shipping_address_last_name': properties['Shipping Last Name'],
+          'checkout_shipping_address_address1': properties['Shipping Address Line 1'],
+          'checkout_shipping_address_address2': properties['Shipping Address Line 2'],
+          'checkout_shipping_address_city': properties['Shipping Town/City'],
+          'checkout_shipping_address_zip': properties['Shipping Postcode'],
+          'checkout_shipping_address_phone': properties['Shipping Phone Number']
+        };
+
+        // Populate form fields
+        for (const [fieldId, value] of Object.entries(fieldMappings)) {
+          const field = document.getElementById(fieldId);
+          if (field && value) {
+            field.value = value;
+          }
+        }
+      })
+      .catch(error => console.error('Error fetching cart data:', error));
+  });
 </script>
