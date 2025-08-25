@@ -56,6 +56,115 @@
           class="product-variant-id"
         >
 
+        <!-- Always-visible UK Shipping Address Form -->
+        <div style="margin-top: 1rem;">
+          <fieldset style="border: none; padding: 0;">
+            <legend style="font-size: 1.2rem; margin-bottom: 0.5rem;">UK Shipping Address</legend>
+
+            <!-- Full Name (required) -->
+            <div style="margin-bottom: 1rem;">
+              <label for="shipping-full-name" class="form__label">Full Name</label>
+              <input
+                type="text"
+                id="shipping-full-name"
+                name="properties[Shipping Full Name]"
+                placeholder="e.g., John Smith"
+                class="input__field"
+                required
+              >
+            </div>
+
+            <!-- Address Line 1 (required) -->
+            <div style="margin-bottom: 1rem;">
+              <label for="shipping-address-line1" class="form__label">Address Line 1</label>
+              <input
+                type="text"
+                id="shipping-address-line1"
+                name="properties[Shipping Address Line 1]"
+                placeholder="e.g., 123 Example Street"
+                class="input__field"
+                required
+              >
+            </div>
+
+            <!-- Address Line 2 (optional) -->
+            <div style="margin-bottom: 1rem;">
+              <label for="shipping-address-line2" class="form__label">Address Line 2 (optional)</label>
+              <input
+                type="text"
+                id="shipping-address-line2"
+                name="properties[Shipping Address Line 2]"
+                placeholder="e.g., Apartment 4B"
+                class="input__field"
+              >
+            </div>
+
+            <!-- Town/City (required) -->
+            <div style="margin-bottom: 1rem;">
+              <label for="shipping-town-city" class="form__label">Town/City</label>
+              <input
+                type="text"
+                id="shipping-town-city"
+                name="properties[Shipping Town/City]"
+                placeholder="e.g., London"
+                class="input__field"
+                required
+              >
+            </div>
+
+            <!-- County (optional) -->
+            <div style="margin-bottom: 1rem;">
+              <label for="shipping-county" class="form__label">County (optional)</label>
+              <input
+                type="text"
+                id="shipping-county"
+                name="properties[Shipping County]"
+                placeholder="e.g., Greater London"
+                class="input__field"
+              >
+            </div>
+
+            <!-- Postcode (required) -->
+            <div style="margin-bottom: 1rem;">
+              <label for="shipping-postcode" class="form__label">Postcode</label>
+              <input
+                type="text"
+                id="shipping-postcode"
+                name="properties[Shipping Postcode]"
+                placeholder="e.g., SW1A 1AA"
+                class="input__field"
+                required
+              >
+            </div>
+
+            <!-- Country (required, pre-filled as UK) -->
+            <div style="margin-bottom: 1rem;">
+              <label for="shipping-country" class="form__label">Country</label>
+              <input
+                type="text"
+                id="shipping-country"
+                name="properties[Shipping Country]"
+                value="UK"
+                class="input__field"
+                required
+              >
+            </div>
+
+            <!-- Phone Number (required) -->
+            <div style="margin-bottom: 1rem;">
+              <label for="shipping-phone" class="form__label">Phone Number</label>
+              <input
+                type="tel"
+                id="shipping-phone"
+                name="properties[Shipping Phone Number]"
+                placeholder="e.g., +44 123 456 7890"
+                class="input__field"
+                required
+              >
+            </div>
+          </fieldset>
+        </div>
+
         {%- if gift_card_recipient_feature_active -%}
           {%- render 'gift-card-recipient-form', product: product, form: form, section: section -%}
         {%- endif -%}

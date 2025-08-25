@@ -61,7 +61,7 @@
       viewedProducts = viewedProducts.slice(0, 7);
   
       localStorage.setItem("viewedProducts", JSON.stringify(viewedProducts));
-  });
+    });
   </script>
   
   {% if section.settings.image_zoom == 'hover' %}
@@ -488,7 +488,7 @@
                 {% render 'product-variant-picker', product: product, block: block, product_form_id: product_form_id %}
               {%- when 'buy_buttons' -%}
                 {% if section.settings.custom_buy_button %}
-                  <a href="#" class="button button-404" id="open_customizer_button" id="open_customizer_button" data-handle="{{ product.handle }}" data-product-id="{{ product.id }}" data-variant-id="{{ product.selected_or_first_available_variant.id }}">
+                  <a href="#" class="button button-404" id="open_customizer_button" data-handle="{{ product.handle }}" data-product-id="{{ product.id }}" data-variant-id="{{ product.selected_or_first_available_variant.id }}">
                     Customise
                     <img src="{{ 'icon-magic-wand.svg' | asset_url }}" alt="arrow-btn" width="18" height="18">
                   </a>
@@ -751,11 +751,57 @@
     <script type="application/ld+json">
       {{ product | structured_data }}
     </script>
+
+    <!-- JavaScript for Custom Buy Button and Form Validation -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        // Custom buy button handler
+        const customButton = document.getElementById('open_customizer_button');
+        if (customButton) {
+          console.log('Custom buy button detected');
+          customButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Custom button clicked, submitting form');
+            const form = document.getElementById('{{ product_form_id }}');
+            if (form) {
+              form.dispatchEvent(new Event('submit', { cancelable: true }));
+            } else {
+              console.error('Form not found:', '{{ product_form_id }}');
+            }
+          });
+        }
+
+        // Postcode validation (UK format, e.g., SW1A 1AA)
+        const postcodeInput = document.getElementById('shipping-postcode');
+        if (postcodeInput) {
+          postcodeInput.addEventListener('input', function (e) {
+            const regex = /^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$/i;
+            if (!regex.test(e.target.value)) {
+              e.target.setCustomValidity('Please enter a valid UK postcode (e.g., SW1A 1AA)');
+            } else {
+              e.target.setCustomValidity('');
+            }
+          });
+        }
+
+        // Phone number validation (basic, e.g., starts with +44)
+        const phoneInput = document.getElementById('shipping-phone');
+        if (phoneInput) {
+          phoneInput.addEventListener('input', function (e) {
+            const regex = /^\+44\s?\d{10}$/;
+            if (!regex.test(e.target.value)) {
+              e.target.setCustomValidity('Please enter a valid UK phone number (e.g., +44 123 456 7890)');
+            } else {
+              e.target.setCustomValidity('');
+            }
+          });
+        }
+      });
+    </script>
   </div>
 </product-info>
 
 {% render 'customiser' %}
-
 
 {% schema %}
 {
