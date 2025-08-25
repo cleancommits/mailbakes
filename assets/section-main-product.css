@@ -1597,28 +1597,49 @@ a.product__text {
   transition: border-color var(--duration-short) ease, box-shadow var(--duration-short) ease;
 }
 
+.product-form select.input__field {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path fill="%231D1D1F" d="M6 9L2 5h8z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+}
+
 .product-form .input__field:hover,
-.product-form .input__field:focus {
+.product-form .input__field:focus,
+.product-form select.input__field:hover,
+.product-form select.input__field:focus {
   border: 0.2rem solid #666666;
   box-shadow: 0 0 0.8rem 0.2rem rgba(102, 102, 102, 0.2), 0 0 0.4rem 0.1rem rgba(102, 102, 102, 0.3);
   background-color: #F7F7F7;
   outline: none;
-  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
 }
 
 .product-form .input__field::placeholder {
   color: rgba(var(--color-foreground), 0.55);
 }
 
-
 .product-form .input__field.error {
   border-color: #dc376e;
   box-shadow: 0 0 0 0.2rem rgba(220, 55, 110, 0.3);
 }
 
+.product-form select.input__field.error {
+  border-color: #dc376e;
+  box-shadow: 0 0 0 0.2rem rgba(220, 55, 110, 0.3);
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path fill="%23dc376e" d="M6 9L2 5h8z"/></svg>');
+}
+
 .product-form .input__field:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.product-form .required-asterisk {
+  color: #dc376e;
+  font-weight: 700;
 }
 
 @media screen and (min-width: 750px) {
@@ -1631,13 +1652,13 @@ a.product__text {
     font-size: 1.6rem;
   }
 
-  .product-form .input__field {
+  .product-form .input__field,
+  .product-form select.input__field {
     font-size: 1.6rem;
     padding: 1rem;
   }
 
-  .product-form .required-asterisk {
-    color: #dc376e;
-    font-weight: 700;
+  .product-form select.input__field {
+    padding-right: 3rem;
   }
 }
