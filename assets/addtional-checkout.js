@@ -43,7 +43,7 @@
       .then(response => response.json())
       .then(cart => {
         // Get the first line item's properties (assuming one product for simplicity)
-        const properties = cart.items[0]?.properties || {};
+        const properties = cart.line_items[0]?.properties || {};
 
         // Map line item properties to checkout form fields
         const fieldMappings = {
