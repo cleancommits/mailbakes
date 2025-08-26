@@ -21,36 +21,6 @@ if (!customElements.get('product-form')) {
         evt.preventDefault();
         if (this.submitButton.getAttribute('aria-disabled') === 'true') return;
 
-        // Validate required shipping address fields
-        const requiredFields = [
-          { id: 'shipping-first-name', name: 'First Name' },
-          { id: 'shipping-last-name', name: 'Last Name' },
-          { id: 'shipping-address-line1', name: 'Address Line 1' },
-          { id: 'shipping-town-city', name: 'City' },
-          { id: 'shipping-postcode', name: 'Postcode' },
-          { id: 'shipping-phone', name: 'Phone Number' }
-        ];
-
-        let hasError = false;
-        requiredFields.forEach(field => {
-          const input = this.form.querySelector(`#${field.id}`);
-          if (input && !input.value.trim()) {
-            input.classList.add('error');
-            hasError = true;
-          } else {
-            input.classList.remove('error');
-          }
-        });
-
-        // Show error message if validation fails
-        if (hasError) {
-          this.handleErrorMessage('Please fill out all required fields.');
-          this.submitButton.classList.remove('loading');
-          this.querySelector('.loading__spinner')?.classList.add('hidden');
-          this.submitButton.removeAttribute('aria-disabled');
-          return;
-        }
-
         this.handleErrorMessage();
 
         this.submitButton.setAttribute('aria-disabled', true);
