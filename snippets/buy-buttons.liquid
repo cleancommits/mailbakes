@@ -246,4 +246,42 @@
 
     <script src="{{ 'pickup-availability.js' | asset_url }}" defer="defer"></script>
   {%- endif -%}
+  <!-- JavaScript for Form Validation -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const form = document.querySelector('form[data-type="add-to-cart-form"]');
+      if (form) {
+        form.addEventListener('submit', function (e) {
+          const requiredFields = [
+            'shipping-first-name',
+            'shipping-last-name',
+            'shipping-address-line1',
+            'shipping-town-city',
+            'shipping-postcode',
+            'shipping-phone'
+          ];
+
+          let hasError = false;
+          requiredFields.forEach(id => {
+            const input = document.getElementById(id);
+            if (input && !input.value.trim()) {
+              input.classList.add('error');
+              hasError = true;
+            } else {
+              input.classList.remove('error');
+            }
+          });
+
+          if (hasError) {
+            e.preventDefault();
+            const errorWrapper = document.querySelector('.product-form__error-message-wrapper');
+            if (errorWrapper) {
+              errorWrapper.removeAttribute('hidden');
+              errorWrapper.querySelector('.product-form__error-message').textContent = 'Please fill out all required fields.';
+            }
+          }
+        });
+      }
+    });
+  </script>
 </div>
