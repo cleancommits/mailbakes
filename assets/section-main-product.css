@@ -1570,15 +1570,16 @@ a.product__text {
 }
 
 .product-form fieldset legend {
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   line-height: 1.4;
   font-weight: 700;
   color: #1D1D1F;
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
+  text-align: center; /* Centered heading */
 }
 
 .product-form .field {
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .product-form .field--inline {
@@ -1592,17 +1593,13 @@ a.product__text {
   min-width: 0;
 }
 
-.product-form .field--inline .form__label,
-.product-form .field--inline .input__field {
-  width: 100%;
-}
-
 .product-form .form__label {
-  font-size: 1.4rem;
-  line-height: calc(1 + 0.5 / var(--font-body-scale));
+  font-size: 1.5rem;
+  line-height: 1.4;
   color: #1D1D1F;
   margin-bottom: 0.6rem;
   display: block;
+  font-weight: 600;
 }
 
 .product-form .required-asterisk {
@@ -1610,51 +1607,53 @@ a.product__text {
   font-weight: 700;
 }
 
+/* Input Fields */
 .product-form .input__field {
   width: 100%;
-  padding: 0.8rem;
-  font-size: 1.4rem;
-  line-height: calc(1 + 0.3 / var(--font-body-scale));
+  padding: 1rem 1.2rem;
+  font-size: 1.5rem;
+  line-height: 1.5;
   color: #1D1D1F;
-  background-color: rgb(var(--color-background));
-  border: 0.1rem solid rgba(var(--color-foreground), 0.5);
-  border-radius: var(--inputs-radius, 0.4rem);
-  transition: border-color var(--duration-short) ease, box-shadow var(--duration-short) ease;
+  background-color: #fff;
+  border: 0.1rem solid rgba(6, 0, 0, 0.5);
+  border-radius: 0.8rem; /* softer rounded corners */
+  transition: all 0.25s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* subtle shadow */
+}
+
+.product-form .input__field:hover {
+  border-color: #666;
+  background-color: #fafafa;
+}
+
+.product-form .input__field:focus {
+  border-color:rgba(0, 0, 0, 0.42); /* professional accent color */
+  box-shadow: 0 0 0 3px rgba(113, 114, 116, 0.2); /* clean focus glow */
+  outline: none;
+  background-color: #fff;
+}
+
+.product-form .input__field::placeholder {
+  color: rgba(0, 0, 0, 0.4);
+  font-style: italic;
+}
+
+.product-form .input__field.error {
+  border-color: #dc376e;
+  box-shadow: 0 0 0 3px rgba(220, 55, 110, 0.25);
 }
 
 .product-form select.input__field {
   appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path fill="%231D1D1F" d="M6 9L2 5h8z"/></svg>');
   background-repeat: no-repeat;
   background-position: right 1rem center;
   padding-right: 2.5rem;
 }
 
-.product-form .input__field:hover,
-.product-form .input__field:focus,
-.product-form select.input__field:hover,
 .product-form select.input__field:focus {
-  border: 0.2rem solid #666666;
-  box-shadow: 0 0 0.8rem 0.2rem rgba(102, 102, 102, 0.2), 0 0 0.4rem 0.1rem rgba(102, 102, 102, 0.3);
-  background-color: #F7F7F7;
-  outline: none;
-}
-
-.product-form .input__field::placeholder {
-  color: rgba(var(--color-foreground), 0.55);
-}
-
-.product-form .input__field.error {
-  border-color: #dc376e;
-  box-shadow: 0 0 0 0.2rem rgba(220, 55, 110, 0.3);
-}
-
-.product-form select.input__field.error {
-  border-color: #dc376e;
-  box-shadow: 0 0 0 0.2rem rgba(220, 55, 110, 0.3);
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path fill="%23dc376e" d="M6 9L2 5h8z"/></svg>');
+  border-color: #0070f3;
+  box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.2);
 }
 
 .product-form .input__field:disabled {
@@ -1662,25 +1661,14 @@ a.product__text {
   cursor: not-allowed;
 }
 
-.product-form .required-asterisk {
-  color: #dc376e;
-  font-weight: 700;
-}
-
+/* Responsive */
 @media screen and (min-width: 750px) {
   .product-form fieldset legend {
     font-size: 2rem;
-    line-height: 1.4;
   }
 
   .product-form .form__label {
     font-size: 1.6rem;
-  }
-
-  .product-form .input__field,
-  .product-form select.input__field {
-    font-size: 1.6rem;
-    padding: 1rem;
   }
 
   .product-form select.input__field {

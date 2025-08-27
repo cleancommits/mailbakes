@@ -32,7 +32,7 @@
       >
         <button
           onclick="document.querySelector('#ProductFormModalWrapper').style.display = 'none';"
-          style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 1.5rem; cursor: pointer;"
+          style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 3rem; cursor: pointer;"
         >
           &times;
         </button>
@@ -66,7 +66,14 @@
           <!-- Always-visible UK Shipping Address Form -->
           <div style="margin-top: 1rem;">
             <fieldset style="border: none; padding: 0; width: 100%">
-              <legend style="font-size: 2.4rem; margin-bottom: 1rem;">Shipping Address</legend>
+              <legend style="font-size: 2.4rem; margin-bottom: 1rem; text-align: center; display: block; width: 100%;">
+                Shipping Address
+              </legend>
+
+              <p style="font-size: 1.4rem; color: #555; margin-bottom: 2rem; line-height: 1.5;">
+                Add your <strong>delivery address</strong> here and double-check it’s correct. 
+                You’ll enter your <strong>billing address</strong> later at checkout.
+              </p>
 
               <!-- First Name and Last Name (required, inline) -->
               <div class="field--inline" style="width: 100%; margin-bottom: 1rem">
@@ -156,7 +163,6 @@
                   class="input__field"
                   required
                 />
-
               </div>
             </fieldset>
           </div>
