@@ -262,4 +262,45 @@ document.getElementById("AddShippingAddressButton").addEventListener("click", fu
   document.body.appendChild(modal);
   modal.style.display = "block";
 });
+
+const firstNameInput = document.getElementById("shipping-first-name");
+const lastNameInput = document.getElementById("shipping-last-name");
+const addressLine1Input = document.getElementById("shipping-address-line1");
+const townCityInput = document.getElementById("shipping-town-city");
+const postcodeInput = document.getElementById("shipping-postcode");
+const phoneInput = document.getElementById("shipping-phone");
+
+const requiredInputs = [
+  firstNameInput,
+  lastNameInput,
+  addressLine1Input,
+  townCityInput,
+  postcodeInput,
+  phoneInput
+];
+
+function toggleAddToCartButton() {
+  // Check if any field is empty
+  const allFilled = requiredInputs.every(input => input.value.trim() !== "");
+  console.log("All filled?", allFilled);
+
+  if (allFilled) {
+    document.getElementById("ProductSubmitButton-{{ section_id }}").disabled = false;
+    document.getElementById("ProductSubmitButton-{{ section_id }}").classList.remove("disabled");
+  } else {
+    document.getElementById("ProductSubmitButton-{{ section_id }}").disabled = true;
+    document.getElementById("ProductSubmitButton-{{ section_id }}").classList.add("disabled");
+  }
+}
+
+toggleAddToCartButton();
+
+requiredInputs.forEach(input => {
+  if (input) {
+    input.addEventListener("input", toggleAddToCartButton);
+  } else {
+    console.warn("Missing input field");
+  }
+});
+
 </script>
