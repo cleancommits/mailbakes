@@ -279,6 +279,15 @@ const requiredInputs = [
   phoneInput
 ];
 
+function formatInputs() {
+  if (firstNameInput) firstNameInput.value = firstNameInput.value.trim();
+  if (lastNameInput) lastNameInput.value = lastNameInput.value.trim();
+  if (addressLine1Input) addressLine1Input.value = addressLine1Input.value.trim();
+  if (townCityInput) townCityInput.value = townCityInput.value.trim();
+  if (postcodeInput) postcodeInput.value = postcodeInput.value.trim().toUpperCase(); // optional: uppercase postcode
+  if (phoneInput) phoneInput.value = phoneInput.value.replace(/\D/g, ""); // optional: remove non-digits
+}
+
 function toggleAddToCartButton() {
   // Check if any field is empty
   const allFilled = requiredInputs.every(input => input.value.trim() !== "");
@@ -287,6 +296,7 @@ function toggleAddToCartButton() {
   if (allFilled) {
     document.getElementById("ProductSubmitButton-{{ section_id }}").disabled = false;
     document.getElementById("ProductSubmitButton-{{ section_id }}").classList.remove("disabled");
+    formatInputs();
   } else {
     document.getElementById("ProductSubmitButton-{{ section_id }}").disabled = true;
     document.getElementById("ProductSubmitButton-{{ section_id }}").classList.add("disabled");
