@@ -155,7 +155,8 @@
                   placeholder="e.g., +44 123 456 7890"
                   class="input__field"
                   required
-                >
+                />
+
               </div>
             </fieldset>
           </div>
@@ -278,6 +279,20 @@ const requiredInputs = [
   postcodeInput,
   phoneInput
 ];
+
+phoneInput.addEventListener("input", function () {
+  // Allow only digits and + at the start
+  let value = phoneInput.value;
+
+  // Keep leading + if exists, then remove non-digits/spaces
+  if (value.startsWith("+")) {
+    value = "+" + value.slice(1).replace(/[^\d\s]/g, "");
+  } else {
+    value = value.replace(/[^\d\s]/g, "");
+  }
+
+  phoneInput.value = value;
+});
 
 function formatInputs() {
   if (firstNameInput) firstNameInput.value = firstNameInput.value.trim();
