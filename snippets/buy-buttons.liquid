@@ -167,6 +167,15 @@
             </fieldset>
           </div>
 
+          <button
+            id="CustomProductSubmitButton-{{ section_id }}"
+            type="button"
+            style="width: 100% !important;"
+            class="product-form__submit button button--full-width {% if show_dynamic_checkout %}button--secondary{% else %}button--primary{% endif %}"
+          >
+            Add to Cart
+          </button>
+
           {%- if gift_card_recipient_feature_active -%}
             {%- render 'gift-card-recipient-form', product: product, form: form, section: section -%}
           {%- endif -%}
@@ -185,7 +194,7 @@
               id="ProductSubmitButton-{{ section_id }}"
               type="submit"
               name="add"
-              style="width: 100% !important;"
+              style="width: 100% !important; display: none;"
               class="product-form__submit button button--full-width {% if show_dynamic_checkout %}button--secondary{% else %}button--primary{% endif %}"
               {% if product.selected_or_first_available_variant.available == false
                 or quantity_rule_soldout
@@ -265,11 +274,11 @@
 <script>
 document.getElementById("AddShippingAddressButton").addEventListener("click", function () {
   const modal = document.getElementById("ProductFormModalWrapper");
-
   document.body.appendChild(modal);
   modal.style.display = "block";
 });
 
+// Input validation setup
 const firstNameInput = document.getElementById("shipping-first-name");
 const lastNameInput = document.getElementById("shipping-last-name");
 const addressLine1Input = document.getElementById("shipping-address-line1");
@@ -285,18 +294,13 @@ const requiredInputs = [
   postcodeInput,
   phoneInput
 ];
-
 phoneInput.addEventListener("input", function () {
-  // Allow only digits and + at the start
   let value = phoneInput.value;
-
-  // Keep leading + if exists, then remove non-digits/spaces
   if (value.startsWith("+")) {
     value = "+" + value.slice(1).replace(/[^\d\s]/g, "");
   } else {
     value = value.replace(/[^\d\s]/g, "");
   }
-
   phoneInput.value = value;
 });
 
@@ -305,9 +309,30 @@ function formatInputs() {
   if (lastNameInput) lastNameInput.value = lastNameInput.value.trim();
   if (addressLine1Input) addressLine1Input.value = addressLine1Input.value.trim();
   if (townCityInput) townCityInput.value = townCityInput.value.trim();
-  if (postcodeInput) postcodeInput.value = postcodeInput.value.trim().toUpperCase(); // optional: uppercase postcode
-  if (phoneInput) phoneInput.value = phoneInput.value.replace(/\D/g, ""); // optional: remove non-digits
+  if (postcodeInput) postcodeInput.value = postcodeInput.value.trim().toUpperCase();
+  if (phoneInput) phoneInput.value = phoneInput.value.replace(/\D/g, "");
 }
+
+function validateInputs() {
+  return requiredInputs.every(input => input && input.value.trim() !== "");
+}
+
+// Click event for the new fake button
+document.getElementById("CustomProductSubmitButton-{{ section_id }}").addEventListener("click", function () {
+  if (validateInputs()) {
+    formatInputs();
+    
+    console.log("All inputs validated. Triggering real Add to Cart...");
+
+    // Trigger the hidden real button
+    document.getElementById("ProductSubmitButton-{{ section_id }}").click();
+
+    // Hide modal after submit
+    document.getElementById("ProductFormModalWrapper").style.display = "none";
+  } else {
+    alert("Please fill out all required fields before adding to cart.");
+  }
+});
 
 function toggleAddToCartButton() {
   // Check if any field is empty
@@ -315,12 +340,12 @@ function toggleAddToCartButton() {
   console.log("All filled?", allFilled);
 
   if (allFilled) {
-    document.getElementById("ProductSubmitButton-{{ section_id }}").disabled = false;
-    document.getElementById("ProductSubmitButton-{{ section_id }}").classList.remove("disabled");
+    document.getElementById("CustomProductSubmitButton-{{ section_id }}").disabled = false;
+    document.getElementById("CustomProductSubmitButton-{{ section_id }}").classList.remove("disabled");
     formatInputs();
   } else {
-    document.getElementById("ProductSubmitButton-{{ section_id }}").disabled = true;
-    document.getElementById("ProductSubmitButton-{{ section_id }}").classList.add("disabled");
+    document.getElementById("CustomProductSubmitButton-{{ section_id }}").disabled = true;
+    document.getElementById("CustomProductSubmitButton-{{ section_id }}").classList.add("disabled");
   }
 }
 
