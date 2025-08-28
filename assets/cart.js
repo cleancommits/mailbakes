@@ -399,6 +399,70 @@ async function customiserUpdateHandle(line, quantity, variantId) {
   return { fetchRoute, updates };
 }
 
+async function getShippingPropertiesFromCart(lineItemKey) {
+  try {
+    const response = await fetch('/cart.js');
+    const cart = await response.json();
+    const targetItem = cart.items.find(item => item.key === lineItemKey);
+    
+    if (!targetItem) return {};
+
+    const shippingProps = {};
+    for (const [key, value] of Object.entries(targetItem.properties || {})) {
+      if (key.startsWith('Shipping ')) {
+        shippingProps[key] = value;
+      }
+    }
+    return shippingProps;
+  } catch (error) {
+    console.error('Error fetching cart for shipping props:', error);
+    return {};
+  }
+}
+
+async function saveCustomProduct(lineItemKey, updatedProperties, variantId, quantity) {
+  const shippingProps = await getShippingPropertiesFromCart(lineItemKey);
+  
+  const finalProperties = { ...updatedProperties, ...shippingProps };
+
+  await fetch('/cart/change.js', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: lineItemKey, quantity: 0 })
+  });
+
+  const addBody = {
+    id: variantId,
+    quantity: quantity,
+    properties: finalProperties
+  };
+  const addResponse = await fetch('/cart/add.js', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(addBody)
+  });
+
+  const parsedAdd = await addResponse.json();
+  if (!parsedAdd.status) {
+    publish(PUB_SUB_EVENTS.cartUpdate, { source: 'customizer', cartData: parsedAdd });
+  } else {
+    console.error('Add error:', parsedAdd);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   updateCartFlexboxClass();
+
+  document.addEventListener('click', async (event) => {
+    if (event.target.closest('#open_customizer_button')) {
+      event.preventDefault();
+      const button = event.target.closest('#open_customizer_button');
+      const customerProductId = button.dataset.customerProduct;
+      const lineItemElement = button.closest('.cart-item');
+      const lineItemKey = lineItemElement.dataset.cartItemKey;
+      
+      // Note: Customizer opening logic here. Assuming it exists elsewhere.
+      // When save is triggered in customizer, call saveCustomProduct(lineItemKey, updatedPropsFromCustomizer, variantId, quantity);
+    }
+  });
 });

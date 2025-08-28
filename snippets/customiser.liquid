@@ -1,0 +1,293 @@
+<div id="personalize-view">
+  <div class='content'>
+    {{ settings.logo | image_url: width: 250 | image_tag: class: 'logo-image' }}
+    <div id='content'>
+      {{ 'ring-spinner.svg' | inline_asset_content }}
+    </div>
+  </div>
+</div>
+
+<div class="customization-frame-container">
+  <div class="customization-frame-modal">
+    <iframe id="customization_app_iframe" src="https://app.mailbakes.com"></iframe>
+  </div>
+</div>
+
+<script type="text/javascript">
+  window.initCustomiserApp = function () {
+    const iframe = document.querySelector('#customization_app_iframe')
+    const domain = '{{ shop.url }}'
+    const lastPage = `${domain}${window.location.pathname}`
+    
+    const personalizeViews = document.querySelectorAll('#open_customizer_button')
+    personalizeViews.forEach(button => {
+      if (button.dataset.customiserBound === 'true') return;
+      button.dataset.customiserBound = 'true';
+      const handle = button.getAttribute('data-handle')
+      const productId = button.getAttribute('data-product-id')
+      const variantId = button.getAttribute('data-variant-id')
+      const customerProductId = button.getAttribute('data-customer-product') || null
+      if (customerProductId) {
+        button.addEventListener('pointerup', e => {
+          e.preventDefault();
+          window.scrollTo({
+            top: 0,
+            behavior: 'auto'
+          });
+          const scrollY = window.scrollY;
+          document.body.style.position = 'fixed';
+          document.body.style.top = `-${scrollY}px`;
+          document.body.style.left = '0';
+          document.body.style.right = '0';
+          document.body.dataset.scrollY = scrollY;
+          document.body.classList.add('customizer-open');
+          iframe.src = `https://app.mailbakes.com/customizer?customer_product_id=${customerProductId}&exit=${lastPage}`;
+          iframe.addEventListener('load', () => {
+            const getHeight = (selector) => Array.from(document.querySelectorAll(selector)).map(el => el.offsetHeight).find(h => h > 0) || 0;
+            const totalOffset = getHeight('.header') + getHeight('.announcement-bar');
+            iframe.classList.add('loaded');
+            document.querySelector('.customization-frame-modal')?.classList.add('loaded');
+            document.querySelector('.customization-frame-modal').style.setProperty('--custom-offset-top', `${totalOffset}px`)
+          });
+        });
+      }
+      else {
+        button.addEventListener('pointerup', e => {
+          e.preventDefault();
+          window.scrollTo({
+            top: 0,
+            behavior: 'auto'
+          });
+          const scrollY = window.scrollY;
+          document.body.style.position = 'fixed';
+          document.body.style.top = `-${scrollY}px`;
+          document.body.style.left = '0';
+          document.body.style.right = '0';
+          document.body.dataset.scrollY = scrollY;
+          document.body.classList.add('customizer-open');
+          iframe.src = `https://app.mailbakes.com/?product_id=${productId}&variant_id=${variantId}&handle=${handle}&exit=${lastPage}`;
+          iframe.addEventListener('load', () => {
+            const getHeight = (selector) => Array.from(document.querySelectorAll(selector)).map(el => el.offsetHeight).find(h => h > 0) || 0;
+            const totalOffset = getHeight('.header') + getHeight('.announcement-bar');
+            iframe.classList.add('loaded');
+            document.querySelector('.customization-frame-modal')?.classList.add('loaded');
+            document.querySelector('.customization-frame-modal').style.setProperty('--custom-offset-top', `${totalOffset}px`)
+          });
+        });
+      }
+    })
+
+    document.querySelector('#close_customizer')?.addEventListener('pointerup', e => {
+      e.preventDefault();
+      iframe.classList.remove('loaded');
+      document.querySelector('.customization-frame-modal')?.classList.remove('loaded');
+      document.body.classList.remove('customizer-open');
+    })
+
+    window.addEventListener("message", onMessage, false);
+
+    function onMessage(e) {
+      if (!(e.origin == "https://app.mailbakes.com" || e.origin == 'https://mailbakes.naturaily.com')) return;
+      var data = e.data;
+      if (data.func == 'modalSize' && data.scope == 'mailbakes') {
+        modalSize(data.param);
+      }
+
+      if (data.func == 'closeModal' && data.scope == 'mailbakes') {
+        closeModal();
+      }
+      if (e.data.type === 'keyboard-open') {
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+    
+        window.scrollTo({ top: 0 });
+    
+        
+      }
+    
+      if (e.data.type === 'keyboard-close') {
+        window.scrollTo({ top: 0 });
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+      }
+      
+    }
+
+    function modalSize(param) {
+      if (param == 'maximize') {
+        iframe.classList.add('maximized');
+        document.querySelector('.customization-frame-modal')?.classList.add('maximized');
+      } else if (param == 'minimize') {
+        iframe.classList.remove('maximized');
+        document.querySelector('.customization-frame-modal')?.classList.remove('maximized');
+      }
+    }
+
+    function closeModal() {
+      const scrollY = document.body.dataset.scrollY || '0';
+      document.body.style.removeProperty('position');
+      document.body.style.removeProperty('top');
+      document.body.style.removeProperty('left');
+      document.body.style.removeProperty('right');
+      document.body.removeAttribute('data-scroll-y');
+      window.scrollTo(0, parseInt(scrollY, 10));
+    
+      iframe.classList.remove('maximized');
+      document.querySelector('.customization-frame-modal')?.classList.remove('maximized');
+      iframe.classList.remove('loaded');
+      document.querySelector('.customization-frame-modal')?.classList.remove('loaded');
+      document.body.classList.remove('customizer-open');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    window.initCustomiserApp();
+  });
+
+  document.addEventListener('shopify:section:updated', function (e) {
+    if (e.detail.section === 'customiser') {
+      window.initCustomiserApp();
+    }
+  });
+  
+</script>
+
+{% if template == 'cart' %}
+   <!--            CUSTOMIZER                -->
+<script type="text/javascript">
+  async function addCustomProduct() {
+    let searchParams = new URLSearchParams(window.location.search)
+    let searchParamsObject = Object.fromEntries(searchParams);
+    let itemsArray = [];
+    let extrasArray = [];
+
+    const customerProductId = searchParams.get('customer_product_id');
+    if (customerProductId) {
+      try {
+        const cart = await fetch(`${window.Shopify.routes.root}cart.js`).then(res => res.json());
+        const updates = {};
+  
+        cart.items.forEach(item => {
+          const props = item.properties || {};
+          if (
+            props._customer_product_id === customerProductId ||
+            props._parent_product_id === customerProductId
+          ) {
+            updates[item.key] = 0;
+          }
+        });
+  
+        if (Object.keys(updates).length > 0) {
+          await fetch(`${window.Shopify.routes.root}cart/update.js`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ updates })
+          });
+        }
+      } catch (err) {
+        console.error('Failed to remove previous items:', err);
+      }
+    }
+    if (searchParams.has('product_variant_id')) {
+      itemsArray.push({
+        'id': searchParams.get('product_variant_id'),
+        'quantity': 1,
+        'properties': {
+          ...{
+            '_custom_image': searchParams.get('product_preview_url'),
+            '_customer_product_id': searchParams.get('customer_product_id'),
+            _lastModified: Date.now()
+          },
+          ...Object.fromEntries(Object.entries(Object.fromEntries(searchParams)).filter(x => x[0][0] == x[0][0].toUpperCase())) // merge with additional attributes
+        }
+      });
+      if (searchParams.has('slices_id')) {
+        itemsArray.push({
+          'id': searchParams.get('slices_id'),
+          'quantity': 1,
+          'properties': {
+            '_parent_product_id': searchParams.get('customer_product_id')
+          }
+        })
+      }
+      if (searchParams.has('extras')) {
+        const extras = searchParams.get('extras').split(',')
+        for (extra of extras) {
+          itemsArray.push({
+            'id': extra,
+            'quantity': 1,
+            'properties': {
+              '_parent_product_id': searchParams.get('customer_product_id')
+            }
+          })
+          try {
+            const response = await fetch(`${window.Shopify.routes.root}variants/${extra}.js`)
+            const body = await response.json();
+            extrasArray.push(body.title);
+          }
+          catch (error) {
+            console.error(error);
+          }
+        }
+        itemsArray[0]['properties']['Extras'] = extrasArray.length ? extrasArray.join(', ') : '';
+      }
+
+      let formData = {
+        'items': itemsArray
+      }
+      
+      try {
+        const response = await fetch(window.Shopify.routes.root + 'cart/add.js', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        })
+        let cart_url_without_params = window.location.origin + window.location.pathname;
+        window.location.href = cart_url_without_params
+      }
+      catch (error) {
+        console.error(error);
+      }
+    }
+
+    // optional code only for products which require preview, redesign, duplicate
+    const imageElement = document.querySelector('.line-item__image.custom__image');
+    const modalImageElement = document.querySelector('.custom-modal .modal-image');
+    if(imageElement && modalImageElement) {
+      const timestamp = new Date().getTime();
+      let srcWithTimestamp = `${imageElement.src}?${timestamp}`;
+      imageElement.src = srcWithTimestamp;
+      srcWithTimestamp = `${modalImageElement.src}?${timestamp}`;
+      modalImageElement.src = srcWithTimestamp;
+    }
+
+    const openModal = (id) => {
+      const modal = document.querySelector(`#${id}`)
+      if(modal) {
+        modal.style.display = 'flex'
+      }
+    }
+    
+    const closeModal = (id) => {
+      const modal = document.querySelector(`#${id}`)
+      if(modal) {
+        modal.style.display = 'none'
+      }
+    }
+  }
+  // async function handleProductRemoval() {
+  //   document.querySelectorAll('input.quantity__input[type=number]').forEach(input => {
+  //     input.addEventListener('change', async (e) => {
+  //       if (input.value == 0) {
+  //         const response = await fetch(window.Shopify.routes.root + 'cart.js');
+  //         const body = await response.json();
+  //       }
+  //     })
+  //   })
+  // }
+  addCustomProduct();
+
+</script>
+{% endif %}

@@ -1,0 +1,25 @@
+{% render 'customiser' %}
+
+{% schema %}
+{
+  "name": "Customiser App",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Customiser App Settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_customiser",
+      "default": false,
+      "label": "Enable Customiser App"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Customiser App",
+      "category": "theme"
+    }
+  ]
+}
+{% endschema %}

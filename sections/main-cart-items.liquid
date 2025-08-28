@@ -33,7 +33,7 @@
           <div class="cart-items">
             {%- for item in cart.items -%}
               {% if item.properties['_parent_product_id'] != blank or item.properties['_gpo_parent_product_group']%}{% continue %}{% endif %}
-              <div class="cart-item {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}" id="CartItem-{{ item.index | plus: 1 }}">
+              <div class="cart-item {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}" id="CartItem-{{ item.index | plus: 1 }}" data-cart-item-key="{{ item.key }}">
                 <div class="cart-item__media">
                   {% if item.image %}
                     <a href="{{ item.url }}" class="cart-item__link" aria-hidden="true" tabindex="-1"> </a>
