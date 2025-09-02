@@ -272,6 +272,7 @@
   {%- endif -%}
 </div>
 <script>
+const idealApiKey = "ak_mf2i193lT7eRO24NyuuzH5yltVX0P";
 document.getElementById("AddShippingAddressButton").addEventListener("click", function () {
   const modal = document.getElementById("ProductFormModalWrapper");
   document.body.appendChild(modal);
@@ -294,45 +295,6 @@ const requiredInputs = [
   postcodeInput,
   phoneInput
 ];
-phoneInput.addEventListener("input", function () {
-  let value = phoneInput.value;
-  if (value.startsWith("+")) {
-    value = "+" + value.slice(1).replace(/[^\d\s]/g, "");
-  } else {
-    value = value.replace(/[^\d\s]/g, "");
-  }
-  phoneInput.value = value;
-});
-
-function formatInputs() {
-  if (firstNameInput) firstNameInput.value = firstNameInput.value.trim();
-  if (lastNameInput) lastNameInput.value = lastNameInput.value.trim();
-  if (addressLine1Input) addressLine1Input.value = addressLine1Input.value.trim();
-  if (townCityInput) townCityInput.value = townCityInput.value.trim();
-  if (postcodeInput) postcodeInput.value = postcodeInput.value.trim().toUpperCase();
-  if (phoneInput) phoneInput.value = phoneInput.value.replace(/(?!^\+)\D/g, "");
-}
-
-function validateInputs() {
-  return requiredInputs.every(input => input && input.value.trim() !== "");
-}
-
-// Click event for the new fake button
-document.getElementById("CustomProductSubmitButton-{{ section_id }}").addEventListener("click", function () {
-  if (validateInputs()) {
-    formatInputs();
-    
-    console.log("All inputs validated. Triggering real Add to Cart...");
-
-    // Trigger the hidden real button
-    document.getElementById("ProductSubmitButton-{{ section_id }}").click();
-
-    // Hide modal after submit
-    document.getElementById("ProductFormModalWrapper").style.display = "none";
-  } else {
-    alert("Please fill out all required fields before adding to cart.");
-  }
-});
 
 function toggleAddToCartButton() {
   // Check if any field is empty
@@ -351,11 +313,135 @@ function toggleAddToCartButton() {
 
 toggleAddToCartButton();
 
+phoneInput.addEventListener("input", function () {
+  let value = phoneInput.value;
+  if (value.startsWith("+")) {
+    value = "+" + value.slice(1).replace(/[^\d\s]/g, "");
+  } else {
+    value = value.replace(/[^\d\s]/g, "");
+  }
+  phoneInput.value = value;
+});
+
+
+// Create suggestion container
+const suggestionBox = document.createElement("div");
+suggestionBox.style.position = "absolute";
+suggestionBox.style.background = "#fff";
+suggestionBox.style.border = "1px solid #ccc";
+suggestionBox.style.zIndex = "1001";
+suggestionBox.style.width = addressLine1Input.offsetWidth + "px";
+suggestionBox.style.maxHeight = "200px";
+suggestionBox.style.overflowY = "auto";
+suggestionBox.style.display = "none";
+addressLine1Input.parentNode.appendChild(suggestionBox);
+
+// Fetch suggestions from Ideal Postcodes
+addressLine1Input.addEventListener("input", async function () {
+  const query = addressLine1Input.value.trim();
+  if (!query) {
+    suggestionBox.style.display = "none";
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.ideal-postcodes.co.uk/v1/places?api_key=${idealApiKey}&query=${encodeURIComponent(query)}`
+    );
+    const data = await response.json();
+    console.log("Address suggestions:", data);
+
+    // Clear previous suggestions
+    suggestionBox.innerHTML = "";
+
+    if (data.result && data.result.length) {
+      data.result.forEach(addr => {
+        const item = document.createElement("div");
+        item.style.padding = "0.5rem";
+        item.style.cursor = "pointer";
+        item.textContent = `${addr.line_1}, ${addr.post_town}, ${addr.postcode}`;
+        item.addEventListener("click", () => {
+          addressInput.value = addr.line_1;
+          if (addr.line_2) document.getElementById("shipping-address-line2").value = addr.line_2;
+          townInput.value = addr.post_town;
+          postcodeInput.value = addr.postcode;
+          suggestionBox.style.display = "none";
+        });
+        suggestionBox.appendChild(item);
+      });
+      suggestionBox.style.display = "block";
+    } else {
+      suggestionBox.style.display = "none";
+    }
+  } catch (err) {
+    console.error("Error fetching Ideal Postcodes:", err);
+    suggestionBox.style.display = "none";
+  }
+});
+
+function formatInputs() {
+  if (firstNameInput) firstNameInput.value = firstNameInput.value.trim();
+  if (lastNameInput) lastNameInput.value = lastNameInput.value.trim();
+  if (addressLine1Input) addressLine1Input.value = addressLine1Input.value.trim();
+  if (townCityInput) townCityInput.value = townCityInput.value.trim();
+  if (postcodeInput) postcodeInput.value = postcodeInput.value.trim().toUpperCase();
+  if (phoneInput) phoneInput.value = phoneInput.value.replace(/(?!^\+)\D/g, "");
+}
+
+// Validate the selected address before submitting
+async function validateAddress() {
+  const line1 = addressLine1Input.value.trim();
+  const town = townCityInput.value.trim();
+  const postcode = postcodeInput.value.trim();
+
+  if (!line1 || !town || !postcode) {
+    alert("Please fill out all required fields.");
+    return false;
+  }
+
+  const response = await fetch(`https://api.ideal-postcodes.co.uk/v1/postcodes?q=${encodeURIComponent(line1 + " " + town + " " + postcode)}&api_key=${idealApiKey}`);
+  const data = await response.json();
+  console.log("validate data:" , data)
+
+  if (!data.result || data.result.length === 0 || data.code == 4000) {
+    return false;
+  }
+
+  return true;
+}
+
+// Click event for the new fake button
+document.getElementById("CustomProductSubmitButton-{{ section_id }}").addEventListener("click", async function () {
+  const isValid = await validateAddress(); // wait for the result
+  if (isValid) {
+    formatInputs();
+
+    console.log("All inputs validated. Triggering real Add to Cart...");
+
+    // Trigger the hidden real button
+    document.getElementById("ProductSubmitButton-{{ section_id }}").click();
+
+    // Hide modal after submit
+    document.getElementById("ProductFormModalWrapper").style.display = "none";
+  } else {
+    alert("The address you entered is not valid. Please select a valid address from the suggestions.");
+  }
+});
+
 requiredInputs.forEach(input => {
   if (input) {
     input.addEventListener("input", toggleAddToCartButton);
   } else {
     console.warn("Missing input field");
+  }
+});
+
+
+
+// Hide suggestions when clicking outside
+document.addEventListener("click", function (e) {
+  if (!suggestionBox.contains(e.target) && e.target !== addressInput) {
+    suggestionBox.style.display = "none";
   }
 });
 
