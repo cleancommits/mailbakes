@@ -323,11 +323,10 @@ function hideError() {
 }
 
 function toggleAddToCartButton() {
-  const allFilled = requiredInputs.every(input => input.value.trim() !== "");
+  const allFilled = requiredInputs.every(input => input && input.value.trim() !== "");
   if (allFilled) {
     document.getElementById("CustomProductSubmitButton-{{ section_id }}").disabled = false;
     document.getElementById("CustomProductSubmitButton-{{ section_id }}").classList.remove("disabled");
-    formatInputs();
     hideError();
   } else {
     document.getElementById("CustomProductSubmitButton-{{ section_id }}").disabled = true;
@@ -335,9 +334,22 @@ function toggleAddToCartButton() {
   }
 }
 
+// Debounce function to prevent rapid input event triggers
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
 toggleAddToCartButton();
 
-// Phone sanitization
+// Phone sanitization (only for phone input)
 phoneInput.addEventListener("input", function () {
   let value = phoneInput.value;
   if (value.startsWith("+")) {
@@ -346,6 +358,20 @@ phoneInput.addEventListener("input", function () {
     value = value.replace(/[^\d\s]/g, "");
   }
   phoneInput.value = value;
+  toggleAddToCartButton();
+});
+
+// Allow spaces in postcode, address, and town/city inputs
+[postcodeInput, addressLine1Input, townCityInput].forEach(input => {
+  if (input) {
+    input.addEventListener("input", debounce(function () {
+      // Convert postcode to uppercase, preserve spaces
+      if (input === postcodeInput) {
+        input.value = input.value.toUpperCase();
+      }
+      toggleAddToCartButton();
+    }, 200));
+  }
 });
 
 // Suggestions dropdown
@@ -405,11 +431,11 @@ addressLine1Input.addEventListener("input", async function () {
 });
 
 function formatInputs() {
-  if (firstNameInput) firstNameInput.value = firstNameInput.value.trim();
-  if (lastNameInput) lastNameInput.value = lastNameInput.value.trim();
-  if (addressLine1Input) addressLine1Input.value = addressLine1Input.value.trim();
-  if (townCityInput) townCityInput.value = townCityInput.value.trim();
-  if (postcodeInput) postcodeInput.value = postcodeInput.value.trim().toUpperCase();
+  if (firstNameInput) firstNameInput.value = firstNameInput.value.trim(); // Trim only for names
+  if (lastNameInput) lastNameInput.value = lastNameInput.value.trim(); // Trim only for names
+  if (addressLine1Input) addressLine1Input.value = addressLine1Input.value; // Preserve spaces
+  if (townCityInput) townCityInput.value = townCityInput.value; // Preserve spaces
+  if (postcodeInput) postcodeInput.value = postcodeInput.value.toUpperCase(); // Preserve spaces, uppercase
   if (phoneInput) phoneInput.value = phoneInput.value.replace(/(?!^\+)\D/g, "");
 }
 
@@ -513,7 +539,7 @@ document.getElementById("CustomProductSubmitButton-{{ section_id }}").addEventLi
 
 requiredInputs.forEach(input => {
   if (input) {
-    input.addEventListener("input", toggleAddToCartButton);
+    input.addEventListener("input", debounce(toggleAddToCartButton, 200));
   }
 });
 
