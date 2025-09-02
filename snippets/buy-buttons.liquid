@@ -310,7 +310,7 @@ function formatInputs() {
   if (addressLine1Input) addressLine1Input.value = addressLine1Input.value.trim();
   if (townCityInput) townCityInput.value = townCityInput.value.trim();
   if (postcodeInput) postcodeInput.value = postcodeInput.value.trim().toUpperCase();
-  if (phoneInput) phoneInput.value = phoneInput.value.replace(/\D/g, "");
+  if (phoneInput) phoneInput.value = phoneInput.value.replace(/(?!^\+)\D/g, "");
 }
 
 function validateInputs() {
@@ -358,5 +358,5 @@ requiredInputs.forEach(input => {
     console.warn("Missing input field");
   }
 });
-//
+
 </script>
