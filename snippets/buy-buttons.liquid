@@ -382,8 +382,16 @@ const enableAutocomplete = async () => {
     await getAddress.autocomplete('shipping-address-line1', getAddressApiKey, {
       selected: (address) => {
         addressLine1Input.value = address.formatted_address[0] || "";
-        document.getElementById("shipping-address-line2").value = address.formatted_address[1] || "";
-        townCityInput.value = address.formatted_address[3] || "";
+        document.getElementById("shipping-address-line2").value = address.formatted_address[1] || address.locality || "";
+        // Split formatted_address[3] if it contains locality and town/city (e.g., "Radcliffe, Manchester")
+        const cityField = address.formatted_address[3] || address.town_or_city || "";
+        const cityParts = cityField.split(',').map(part => part.trim());
+        townCityInput.value = cityParts[cityParts.length - 1] || ""; // Use last part as town/city
+        if (cityParts.length > 1) {
+          // Prepend locality to line_2 if not already set
+          const currentLine2 = document.getElementById("shipping-address-line2").value;
+          document.getElementById("shipping-address-line2").value = currentLine2 ? `${cityParts[0]}, ${currentLine2}` : cityParts[0];
+        }
         postcodeInput.value = address.postcode || "";
         toggleAddToCartButton();
       },
