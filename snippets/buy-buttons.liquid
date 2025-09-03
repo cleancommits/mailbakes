@@ -382,16 +382,21 @@ const enableAutocomplete = async () => {
     await getAddress.autocomplete('shipping-address-line1', getAddressApiKey, {
       selected: (address) => {
         addressLine1Input.value = address.formatted_address[0] || "";
-        document.getElementById("shipping-address-line2").value = address.formatted_address[1] || address.locality || "";
-        // Split formatted_address[3] if it contains locality and town/city (e.g., "Radcliffe, Manchester")
+        // Use formatted_address[1] as the base for line_2, or locality if available
+        let line2Value = address.formatted_address[1] || address.locality || "";
+        // Split formatted_address[3] for town/city (e.g., "Radcliffe, Manchester")
         const cityField = address.formatted_address[3] || address.town_or_city || "";
         const cityParts = cityField.split(',').map(part => part.trim());
-        townCityInput.value = cityParts[cityParts.length - 1] || ""; // Use last part as town/city
+        // Use the last part as town/city
+        townCityInput.value = cityParts[cityParts.length - 1] || "";
+        // If locality exists (e.g., "Radcliffe"), add it to line_2 only if not already present
         if (cityParts.length > 1) {
-          // Prepend locality to line_2 if not already set
-          const currentLine2 = document.getElementById("shipping-address-line2").value;
-          document.getElementById("shipping-address-line2").value = currentLine2 ? `${cityParts[0]}, ${currentLine2}` : cityParts[0];
+          const locality = cityParts[0];
+          if (!line2Value.toLowerCase().includes(locality.toLowerCase())) {
+            line2Value = line2Value ? `${locality}, ${line2Value}` : locality;
+          }
         }
+        document.getElementById("shipping-address-line2").value = line2Value;
         postcodeInput.value = address.postcode || "";
         toggleAddToCartButton();
       },
