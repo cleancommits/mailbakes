@@ -431,20 +431,16 @@ async function validateAddress() {
     return false;
   }
 
+  const query = encodeURIComponent(`${line1}, ${town}, ${postcode}`);
+
   try {
     const response = await fetch(
-      `https://api.getaddress.io/validate?api-key=${getAddressApiKey}`,
+      `https://api.getaddress.io/validate/${query}?api-key=${getAddressApiKey}`,
       {
-        method: "POST",
+        method: "GET",
         headers: {
-          "Content-Type": "application/json",
           "Accept": "application/json"
-        },
-        body: JSON.stringify({
-          line_1: line1,
-          city: town,
-          postcode: postcode
-        })
+        }
       }
     );
 
@@ -454,7 +450,17 @@ async function validateAddress() {
 
     const data = await response.json();
 
-    if (!data.valid) {
+    if (data.status === 404) {
+      showError("The address could not be found. Please verify your address details or select a suggestion.");
+      return false;
+    }
+
+    if (data.status === 300) {
+      showError("Multiple addresses found. Please select a suggestion from the autocomplete list or refine your address details.");
+      return false;
+    }
+
+    if (data.status !== 200 || !data.address.postcode) {
       showError("The address could not be validated. Please verify your address details or select a suggestion.");
       return false;
     }
