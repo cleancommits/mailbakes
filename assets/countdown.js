@@ -1,7 +1,7 @@
 function countdown() {
   document.querySelectorAll('.announcement-bar__countdown').forEach(bar => {
-    const weekdayHour = 14; // Changed from 12 to 14 for 2 PM
-    const weekendHour = 10;
+    const weekdayHour = 14; // 2 PM for Monday-Friday
+    const weekendHour = 10; // Changed to 10 for 10:30 AM on Saturday
     const now = new Date();
     const day = now.getDay();
     const toReplaceWith = `<span class="timer-${bar.dataset.block} timer"></span>`;
@@ -9,7 +9,7 @@ function countdown() {
     let dateTimeUntil;
     oncePerSecondAnim(() => {
       if (day >= 1 && day <= 4) { // MONDAY-THURSDAY behaviour
-        if (now.getHours() < 14) { // Changed from 12 to 14
+        if (now.getHours() < 14) {
           text = bar.dataset.message1.toString();
           dateTimeUntil = new Date(now.getFullYear(), now.getMonth(), now.getDate(), weekdayHour, 0, 0, 0);
         } else {
@@ -18,18 +18,18 @@ function countdown() {
           dateTimeUntil = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), weekdayHour, 0, 0, 0);
         }
       } else if (day == 5) { // FRIDAY behaviour
-        if (now.getHours() < 14) { // Changed from 12 to 14
+        if (now.getHours() < 14) {
           text = bar.dataset.message1.toString();
           dateTimeUntil = new Date(now.getFullYear(), now.getMonth(), now.getDate(), weekdayHour, 0, 0, 0);
         } else {
           text = bar.dataset.message2.toString();
           let tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-          dateTimeUntil = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), weekendHour, 0, 0, 0);
+          dateTimeUntil = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), weekendHour, 30, 0, 0); // Changed to 10:30 AM for Saturday
         }
       } else if (day == 6) { // SATURDAY behaviour
-        if (now.getHours() < 10) {
+        if (now.getHours() < 10 || (now.getHours() === 10 && now.getMinutes() < 30)) { // Changed to 10:30 AM
           text = bar.dataset.message1.toString();
-          dateTimeUntil = new Date(now.getFullYear(), now.getMonth(), now.getDate(), weekendHour, 0, 0, 0);
+          dateTimeUntil = new Date(now.getFullYear(), now.getMonth(), now.getDate(), weekendHour, 30, 0, 0); // Changed to 10:30 AM
         }
       } else if (day == 0) { // SUNDAY behaviour
         if (now.getHours() >= 12) {
