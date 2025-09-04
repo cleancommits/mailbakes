@@ -1,7 +1,7 @@
 function countdown() {
   document.querySelectorAll('.announcement-bar__countdown').forEach(bar => {
     const weekdayHour = 14; // Changed from 12 to 14 for 2 PM
-    const weekendHour = 8;
+    const weekendHour = 10;
     const now = new Date();
     const day = now.getDay();
     const toReplaceWith = `<span class="timer-${bar.dataset.block} timer"></span>`;
@@ -27,7 +27,7 @@ function countdown() {
           dateTimeUntil = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), weekendHour, 0, 0, 0);
         }
       } else if (day == 6) { // SATURDAY behaviour
-        if (now.getHours() < 8) {
+        if (now.getHours() < 10) {
           text = bar.dataset.message1.toString();
           dateTimeUntil = new Date(now.getFullYear(), now.getMonth(), now.getDate(), weekendHour, 0, 0, 0);
         }
