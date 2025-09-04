@@ -469,8 +469,7 @@ async function validateAddress() {
     }
 
     if (data.status === 300) {
-      showError("Multiple addresses found. Please select a suggestion from the autocomplete list or refine your address details.");
-      return false;
+      return true;
     }
 
     if (data.status !== 200 || !data.address.postcode) {
