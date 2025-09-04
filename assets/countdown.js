@@ -1,28 +1,28 @@
 function countdown() {
   document.querySelectorAll('.announcement-bar__countdown').forEach(bar => {
-    const weekdayHour = 12;
+    const weekdayHour = 14; // Changed from 12 to 14 for 2 PM
     const weekendHour = 8;
     const now = new Date();
     const day = now.getDay();
     const toReplaceWith = `<span class="timer-${bar.dataset.block} timer"></span>`;
-    let text = ''
+    let text = '';
     let dateTimeUntil;
     oncePerSecondAnim(() => {
       if (day >= 1 && day <= 4) { // MONDAY-THURSDAY behaviour
-        if (now.getHours() < 12) {
+        if (now.getHours() < 14) { // Changed from 12 to 14
           text = bar.dataset.message1.toString();
           dateTimeUntil = new Date(now.getFullYear(), now.getMonth(), now.getDate(), weekdayHour, 0, 0, 0);
         } else {
-          text = bar.dataset.message2.toString()
+          text = bar.dataset.message2.toString();
           let tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
           dateTimeUntil = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), weekdayHour, 0, 0, 0);
         }
       } else if (day == 5) { // FRIDAY behaviour
-        if (now.getHours() < 12) {
+        if (now.getHours() < 14) { // Changed from 12 to 14
           text = bar.dataset.message1.toString();
           dateTimeUntil = new Date(now.getFullYear(), now.getMonth(), now.getDate(), weekdayHour, 0, 0, 0);
         } else {
-          text = bar.dataset.message2.toString()
+          text = bar.dataset.message2.toString();
           let tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
           dateTimeUntil = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), weekendHour, 0, 0, 0);
         }
@@ -51,7 +51,7 @@ function countdown() {
     if (day == 0 && bar.dataset.message2) {
       bar.innerHTML = `<span>${bar.dataset.message2}</span>`;
     }
-  })
+  });
 }
 
 function getTimeUntil(dateTimeUntil) {
