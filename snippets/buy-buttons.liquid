@@ -11,31 +11,13 @@
         assign show_dynamic_checkout = true
       endif
     -%}
-    <button
-      id="AddShippingAddressButton"
-      class="product-form__submit button button--full-width {% if show_dynamic_checkout %}button--secondary{% else %}button--primary{% endif %}"
-      style="margin-bottom: 1rem;"
-    >          
-      Add Shipping Address
-    </button>
 
-    <div
-      id="ProductFormModalWrapper"
-      style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; justify-content: center; align-items: center;"
-    >
+    <div id="StandardBuyButtonsWrapper">
       <product-form
-        id="ProductFormModal"
         class="product-form"
-        style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 1000; max-width: 90%; width: 600px; max-height: 90vh; overflow-y: auto; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"
         data-hide-errors="{{ gift_card_recipient_feature_active }}"
         data-section-id="{{ section.id }}"
       >
-        <button
-          onclick="document.querySelector('#ProductFormModalWrapper').style.display = 'none';"
-          style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 3rem; cursor: pointer;"
-        >
-          &times;
-        </button>
         <div class="product-form__error-message-wrapper" role="alert" hidden>
           <span class="svg-wrapper">
             {{- 'icon-error.svg' | inline_asset_content -}}
@@ -57,151 +39,20 @@
             {% if product.selected_or_first_available_variant.available == false
               or quantity_rule_soldout
               or product.selected_or_first_available_variant == null
-            %}
-              disabled
-            {% endif %}
+            %}disabled{% endif %}
             class="product-variant-id"
           >
 
-          <!-- Always-visible UK Shipping Address Form -->
-          <div style="margin-top: 1rem;">
-            <fieldset style="border: none; padding: 0; width: 100%">
-              <legend style="font-size: 2.4rem; margin-bottom: 1rem; text-align: center; display: block; width: 100%;">
-                Shipping Address
-              </legend>
-
-              <p style="font-size: 1.4rem; color: #555; margin-bottom: 2rem; line-height: 1.5;">
-                Add your <strong>delivery address</strong> here and double-check it’s correct. 
-                You’ll enter your <strong>billing address</strong> later at checkout.
-              </p>
-
-              <!-- First Name and Last Name (required, inline) -->
-              <div class="field--inline" style="width: 100%; margin-bottom: 1rem">
-                <div class="field__inner">
-                  <label for="shipping-first-name" class="form__label">First Name <span class="required-asterisk">*</span></label>
-                  <input
-                    type="text"
-                    id="shipping-first-name"
-                    name="properties[Shipping First Name]"
-                    placeholder="e.g., John"
-                    class="input__field"
-                    required
-                  >
-                </div>
-                <div class="field__inner">
-                  <label for="shipping-last-name" class="form__label">Last Name <span class="required-asterisk">*</span></label>
-                  <input
-                    type="text"
-                    id="shipping-last-name"
-                    name="properties[Shipping Last Name]"
-                    placeholder="e.g., Smith"
-                    class="input__field"
-                    required
-                  >
-                </div>
-              </div>
-
-              <!-- Address Line 1 (required) -->
-              <div style="margin-bottom: 1rem; margin-top: 1rem;">
-                <label for="shipping-address-line1" class="form__label">Address Line 1 <span class="required-asterisk">*</span></label>
-                <input
-                  type="text"
-                  id="shipping-address-line1"
-                  name="properties[Shipping Address Line 1]"
-                  placeholder="e.g., 123 Example Street"
-                  class="input__field"
-                  required
-                >
-              </div>
-
-              <!-- Address Line 2 (optional) -->
-              <div style="margin-bottom: 1rem;">
-                <label for="shipping-address-line2" class="form__label">Address Line 2</label>
-                <input
-                  type="text"
-                  id="shipping-address-line2"
-                  name="properties[Shipping Address Line 2]"
-                  placeholder="e.g., Apartment 4B"
-                  class="input__field"
-                >
-              </div>
-
-              <!-- Town/City (required) -->
-              <div style="margin-bottom: 1rem;">
-                <label for="shipping-town-city" class="form__label">City <span class="required-asterisk">*</span></label>
-                <input
-                  type="text"
-                  id="shipping-town-city"
-                  name="properties[Shipping Town/City]"
-                  placeholder="e.g., London"
-                  class="input__field"
-                  required
-                >
-              </div>
-
-              <!-- Postcode (required) -->
-              <div style="margin-bottom: 1rem;">
-                <label for="shipping-postcode" class="form__label">Postcode <span class="required-asterisk">*</span></label>
-                <input
-                  type="text"
-                  id="shipping-postcode"
-                  name="properties[Shipping Postcode]"
-                  placeholder="e.g., SW1A 1AA"
-                  class="input__field"
-                  required
-                >
-              </div>
-
-              <!-- Phone Number (required) -->
-              <div style="margin-bottom: 1rem;">
-                <label for="shipping-phone" class="form__label">Phone Number <span class="required-asterisk">*</span></label>
-                <input
-                  type="tel"
-                  id="shipping-phone"
-                  name="properties[Shipping Phone Number]"
-                  placeholder="e.g., +44 123 456 7890"
-                  class="input__field"
-                  required
-                />
-              </div>
-            </fieldset>
-          </div>
-
-          <button
-            id="CustomProductSubmitButton-{{ section_id }}"
-            type="button"
-            style="width: 100% !important;"
-            class="product-form__submit button button--full-width {% if show_dynamic_checkout %}button--secondary{% else %}button--primary{% endif %}"
-          >
-            Add to Cart
-          </button>
-
-          {%- if gift_card_recipient_feature_active -%}
-            {%- render 'gift-card-recipient-form', product: product, form: form, section: section -%}
-          {%- endif -%}
-
           <div class="product-form__buttons">
-            {%- liquid
-              assign check_against_inventory = true
-              if product.selected_or_first_available_variant.inventory_management != 'shopify' or product.selected_or_first_available_variant.inventory_policy == 'continue'
-                assign check_against_inventory = false
-              endif
-              if product.selected_or_first_available_variant.quantity_rule.min > product.selected_or_first_available_variant.inventory_quantity and check_against_inventory
-                assign quantity_rule_soldout = true
-              endif
-            -%}
             <button
               id="ProductSubmitButton-{{ section_id }}"
               type="submit"
               name="add"
-              style="width: 100% !important; display: none;"
               class="product-form__submit button button--full-width {% if show_dynamic_checkout %}button--secondary{% else %}button--primary{% endif %}"
               {% if product.selected_or_first_available_variant.available == false
                 or quantity_rule_soldout
                 or product.selected_or_first_available_variant == null
-              %}
-                disabled
-              {% endif %}
+              %}disabled{% endif %}
             >
               <span>
                 {%- if product.selected_or_first_available_variant == null -%}
@@ -221,20 +72,233 @@
         {%- endform -%}
       </product-form>
     </div>
-  {%- else -%}
-    <div class="product-form">
-      <div class="product-form__buttons form">
-        <button
-          type="submit"
-          name="add"
-          class="product-form__submit button button--full-width button--primary"
-          disabled
+
+    <div id="CustomBuyButtonsWrapper" style="display: none;">
+      <button
+        id="AddShippingAddressButton"
+        class="product-form__submit button button--full-width {% if show_dynamic_checkout %}button--secondary{% else %}button--primary{% endif %}"
+        style="margin-bottom: 1rem;"
+      >          
+        Add Shipping Address
+      </button>
+
+      <div
+        id="ProductFormModalWrapper"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; justify-content: center; align-items: center;"
+      >
+        <product-form
+          id="ProductFormModal"
+          class="product-form"
+          style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 1000; max-width: 90%; width: 600px; max-height: 90vh; overflow-y: auto; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"
+          data-hide-errors="{{ gift_card_recipient_feature_active }}"
+          data-section-id="{{ section.id }}"
         >
-          {{ 'products.product.sold_out' | t }}
-        </button>
+          <button
+            onclick="document.querySelector('#ProductFormModalWrapper').style.display = 'none';"
+            style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 3rem; cursor: pointer;"
+          >
+            &times;
+          </button>
+          <div class="product-form__error-message-wrapper" role="alert" hidden>
+            <span class="svg-wrapper">
+              {{- 'icon-error.svg' | inline_asset_content -}}
+            </span>
+            <span class="product-form__error-message"></span>
+          </div>
+
+          {%- form 'product',
+            product,
+            id: product_form_id,
+            class: 'form',
+            novalidate: 'novalidate',
+            data-type: 'add-to-cart-form'
+          -%}
+            <input
+              type="hidden"
+              name="id"
+              value="{{ product.selected_or_first_available_variant.id }}"
+              {% if product.selected_or_first_available_variant.available == false
+                or quantity_rule_soldout
+                or product.selected_or_first_available_variant == null
+              %}
+                disabled
+              {% endif %}
+              class="product-variant-id"
+            >
+
+            <!-- Always-visible UK Shipping Address Form -->
+            <div style="margin-top: 1rem;">
+              <fieldset style="border: none; padding: 0; width: 100%">
+                <legend style="font-size: 2.4rem; margin-bottom: 1rem; text-align: center; display: block; width: 100%;">
+                  Shipping Address
+                </legend>
+
+                <p style="font-size: 1.4rem; color: #555; margin-bottom: 2rem; line-height: 1.5;">
+                  Add your <strong>delivery address</strong> here and double-check it’s correct. 
+                  You’ll enter your <strong>billing address</strong> later at checkout.
+                </p>
+
+                <!-- First Name and Last Name (required, inline) -->
+                <div class="field--inline" style="width: 100%; margin-bottom: 1rem">
+                  <div class="field__inner">
+                    <label for="shipping-first-name" class="form__label">First Name <span class="required-asterisk">*</span></label>
+                    <input
+                      type="text"
+                      id="shipping-first-name"
+                      name="properties[Shipping First Name]"
+                      placeholder="e.g., John"
+                      class="input__field"
+                      required
+                    >
+                  </div>
+                  <div class="field__inner">
+                    <label for="shipping-last-name" class="form__label">Last Name <span class="required-asterisk">*</span></label>
+                    <input
+                      type="text"
+                      id="shipping-last-name"
+                      name="properties[Shipping Last Name]"
+                      placeholder="e.g., Smith"
+                      class="input__field"
+                      required
+                    >
+                  </div>
+                </div>
+
+                <!-- Address Line 1 (required) -->
+                <div style="margin-bottom: 1rem; margin-top: 1rem;">
+                  <label for="shipping-address-line1" class="form__label">Address Line 1 <span class="required-asterisk">*</span></label>
+                  <input
+                    type="text"
+                    id="shipping-address-line1"
+                    name="properties[Shipping Address Line 1]"
+                    placeholder="e.g., 123 Example Street"
+                    class="input__field"
+                    required
+                  >
+                </div>
+
+                <!-- Address Line 2 (optional) -->
+                <div style="margin-bottom: 1rem;">
+                  <label for="shipping-address-line2" class="form__label">Address Line 2</label>
+                  <input
+                    type="text"
+                    id="shipping-address-line2"
+                    name="properties[Shipping Address Line 2]"
+                    placeholder="e.g., Apartment 4B"
+                    class="input__field"
+                  >
+                </div>
+
+                <!-- Town/City (required) -->
+                <div style="margin-bottom: 1rem;">
+                  <label for="shipping-town-city" class="form__label">City <span class="required-asterisk">*</span></label>
+                  <input
+                    type="text"
+                    id="shipping-town-city"
+                    name="properties[Shipping Town/City]"
+                    placeholder="e.g., London"
+                    class="input__field"
+                    required
+                  >
+                </div>
+
+                <!-- Postcode (required) -->
+                <div style="margin-bottom: 1rem;">
+                  <label for="shipping-postcode" class="form__label">Postcode <span class="required-asterisk">*</span></label>
+                  <input
+                    type="text"
+                    id="shipping-postcode"
+                    name="properties[Shipping Postcode]"
+                    placeholder="e.g., SW1A 1AA"
+                    class="input__field"
+                    required
+                  >
+                </div>
+
+                <!-- Phone Number (required) -->
+                <div style="margin-bottom: 1rem;">
+                  <label for="shipping-phone" class="form__label">Phone Number <span class="required-asterisk">*</span></label>
+                  <input
+                    type="tel"
+                    id="shipping-phone"
+                    name="properties[Shipping Phone Number]"
+                    placeholder="e.g., +44 123 456 7890"
+                    class="input__field"
+                    required
+                  />
+                </div>
+              </fieldset>
+            </div>
+
+            <button
+              id="CustomProductSubmitButton-{{ section_id }}"
+              type="button"
+              style="width: 100% !important;"
+              class="product-form__submit button button--full-width {% if show_dynamic_checkout %}button--secondary{% else %}button--primary{% endif %}"
+            >
+              Add to Cart
+            </button>
+
+            {%- if gift_card_recipient_feature_active -%}
+              {%- render 'gift-card-recipient-form', product: product, form: form, section: section -%}
+            {%- endif -%}
+
+            <div class="product-form__buttons">
+              {%- liquid
+                assign check_against_inventory = true
+                if product.selected_or_first_available_variant.inventory_management != 'shopify' or product.selected_or_first_available_variant.inventory_policy == 'continue'
+                  assign check_against_inventory = false
+                endif
+                if product.selected_or_first_available_variant.quantity_rule.min > product.selected_or_first_available_variant.inventory_quantity and check_against_inventory
+                  assign quantity_rule_soldout = true
+                endif
+              -%}
+              <button
+                id="ProductSubmitButton-{{ section_id }}"
+                type="submit"
+                name="add"
+                style="width: 100% !important; display: none;"
+                class="product-form__submit button button--full-width {% if show_dynamic_checkout %}button--secondary{% else %}button--primary{% endif %}"
+                {% if product.selected_or_first_available_variant.available == false
+                  or quantity_rule_soldout
+                  or product.selected_or_first_available_variant == null
+                %}
+                  disabled
+                {% endif %}
+              >
+                <span>
+                  {%- if product.selected_or_first_available_variant == null -%}
+                    {{ 'products.product.unavailable' | t }}
+                  {%- elsif product.selected_or_first_available_variant.available == false or quantity_rule_soldout -%}
+                    {{ 'products.product.sold_out' | t }}
+                  {%- else -%}
+                    {{ 'products.product.add_to_cart' | t }}
+                  {%- endif -%}
+                </span>
+                {%- render 'loading-spinner' -%}
+              </button>
+              {%- if show_dynamic_checkout -%}
+                {{ form | payment_button }}
+              {%- endif -%}
+            </div>
+          {%- endform -%}
+        </product-form>
       </div>
-    </div>
-  {%- endif -%}
+    {%- else -%}
+      <div class="product-form">
+        <div class="product-form__buttons form">
+          <button
+            type="submit"
+            name="add"
+            class="product-form__submit button button--full-width button--primary"
+            disabled
+          >
+            {{ 'products.product.sold_out' | t }}
+          </button>
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
 
   {%- if show_pickup_availability -%}
     {{ 'component-pickup-availability.css' | asset_url | stylesheet_tag }}
@@ -421,6 +485,95 @@ function formatInputs() {
   if (phoneInput) phoneInput.value = phoneInput.value.replace(/(?!^\+)\D/g, "");
 }
 
+async function validateWithGetAddress(query) {
+  try {
+    const response = await fetch(
+      `https://api.getaddress.io/validate/${query}?api-key=${getAddressApiKey}`,
+      { method: "GET", headers: { Accept: "application/json" } }
+    );
+
+    if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+    const data = await response.json();
+
+    if (data.status === 200 && data.address?.postcode) {
+      console.log("[Validation] Success via getAddress.io");
+      // Update form fields
+      addressLine1Input.value = data.address.line_1 || line1;
+      document.getElementById("shipping-address-line2").value = data.address.line_2 || "";
+      townCityInput.value = data.address.town_or_city || town;
+      postcodeInput.value = data.address.postcode || postcode;
+      return true;
+    }
+
+    console.warn("[Validation] getAddress.io returned invalid response:", data);
+    return false;
+  } catch (err) {
+    console.warn("[Validation] getAddress.io failed:", err);
+    return false;
+  }
+}
+
+// --- Helper: call Postcoder (Ideal Postcodes) validate ---
+async function validateWithPostcoder(line1, town, postcode) {
+  const idealApiKey = "ak_mf2i193lT7eRO24NyuuzH5yltVX0P"; // Replace with secure storage if possible
+  const myHeaders = new Headers();
+  myHeaders.append("Content-Type", "application/json");
+  myHeaders.append("Accept", "application/json");
+
+  const raw = JSON.stringify({
+    query: `${line1}, ${town}, ${postcode}`,
+    postcode: postcode,
+    post_town: town
+  });
+
+  const requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body: raw,
+    redirect: "follow"
+  };
+
+  try {
+    const response = await fetch(
+      `https://api.ideal-postcodes.co.uk/v1/cleanse/addresses?api_key=${idealApiKey}`,
+      requestOptions
+    );
+
+    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+    const data = await response.json();
+    if (!data || !data.result) {
+      console.warn("[Validation] Postcoder returned no results");
+      return false;
+    }
+
+    const result = Array.isArray(data.result) ? data.result[0] : data.result;
+
+    if (
+      !result ||
+      result.confidence < 0.8 ||
+      result.postcode_match !== "FULL" ||
+      result.post_town_match !== "FULL" ||
+      result.thoroughfare_match !== "FULL"
+    ) {
+      console.warn("[Validation] Postcoder returned low confidence match:", result);
+      return false;
+    }
+
+    console.log("[Validation] Success via Postcoder");
+    // Update form inputs with validated address
+    addressLine1Input.value = result.line_1 || line1;
+    document.getElementById("shipping-address-line2").value = result.line_2 || "";
+    townCityInput.value = result.post_town || town;
+    postcodeInput.value = result.postcode || postcode;
+
+    return true;
+  } catch (err) {
+    console.error("[Validation] Postcoder API error:", err.message);
+    return false;
+  }
+}
+
 async function validateAddress() {
   const line1 = addressLine1Input.value.trim();
   const town = townCityInput.value.trim();
@@ -431,14 +584,14 @@ async function validateAddress() {
     return false;
   }
 
-  // Basic postcode format validation (UK postcodes typically follow AA9A 9AA, A9A 9AA, etc.)
+  // UK postcode format check
   const postcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$/i;
   if (!postcodeRegex.test(postcode)) {
     showError("Please enter a valid UK postcode (e.g., SW1A 1AA).");
     return false;
   }
 
-  // Basic town/city validation (should not be numeric)
+  // Town/city validation
   if (/^\d+$/.test(town)) {
     showError("Please enter a valid city/town name.");
     return false;
@@ -446,50 +599,32 @@ async function validateAddress() {
 
   const query = encodeURIComponent(`${line1}, ${town}, ${postcode}`);
 
-  try {
-    const response = await fetch(
-      `https://api.getaddress.io/validate/${query}?api-key=${getAddressApiKey}`,
-      {
-        method: "GET",
-        headers: {
-          "Accept": "application/json"
-        }
-      }
-    );
+  // --- Main Validation Flow ---
+  let valid = await validateWithGetAddress(query);
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    if (data.status === 404) {
-      showError("The address could not be found. Please verify your address details or select a suggestion.");
-      return false;
-    }
-
-    if (data.status === 300) {
-      return true;
-    }
-
-    if (data.status !== 200 || !data.address.postcode) {
-      showError("The address could not be validated. Please verify your address details or select a suggestion.");
-      return false;
-    }
-
-    // Update form inputs with validated address
-    addressLine1Input.value = data.address.line_1 || line1;
-    document.getElementById("shipping-address-line2").value = data.address.line_2 || "";
-    townCityInput.value = data.address.town_or_city || town;
-    postcodeInput.value = data.address.postcode || postcode;
-
-    hideError();
-    return true;
-  } catch (err) {
-    console.error("Error validating address:", err);
-    showError("An error occurred while validating the address. Please try again.");
-    return false;
+  if (!valid) {
+    console.log("[Validation] Falling back to Postcoder...");
+    valid = await validateWithPostcoder(line1, town, postcode);
   }
+
+  if (!valid) {
+    console.log("[Validation] Both APIs failed, asking user confirmation...");
+    return new Promise(resolve => {
+      const confirmProceed = confirm(
+        "We could not validate your address automatically. Please double check your details.\n\nIf you are sure this is correct, click OK to continue."
+      );
+      if (confirmProceed) {
+        hideError();
+        resolve(true);
+      } else {
+        showError("Please verify your address details before continuing.");
+        resolve(false);
+      }
+    });
+  }
+
+  hideError();
+  return true;
 }
 
 document.getElementById("CustomProductSubmitButton-{{ section_id }}").addEventListener("click", async function () {
@@ -506,4 +641,21 @@ requiredInputs.forEach(input => {
     input.addEventListener("input", debounce(toggleAddToCartButton, 200));
   }
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+  const hasProductButtons = document.querySelector(".product-form__buttons");
+  const standardWrapper = document.getElementById("StandardBuyButtonsWrapper");
+  const customWrapper = document.getElementById("CustomBuyButtonsWrapper");
+
+  if (hasProductButtons) {
+    // Show Shopify Buy Buttons, hide custom
+    standardWrapper.style.display = "block";
+    customWrapper.style.display = "none";
+  } else {
+    // Show custom shipping flow
+    standardWrapper.style.display = "none";
+    customWrapper.style.display = "block";
+  }
+});
+
 </script>
