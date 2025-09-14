@@ -642,17 +642,24 @@ requiredInputs.forEach(input => {
   }
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-  const hasProductButtons = document.querySelector(".product-form__buttons");
+window.addEventListener("load", function () {
+  const hasProductButtons = document.getElementsByClassName("shopify-payment-button");
   const standardWrapper = document.getElementById("StandardBuyButtonsWrapper");
   const customWrapper = document.getElementById("CustomBuyButtonsWrapper");
 
-  if (hasProductButtons) {
-    // Show Shopify Buy Buttons, hide custom
+  // Check if at least one button has display:block
+  let hasVisibleButton = false;
+  for (let i = 0; i < hasProductButtons.length; i++) {
+    if (window.getComputedStyle(hasProductButtons[i]).display === "block") {
+      hasVisibleButton = true;
+      break;
+    }
+  }
+  if (hasVisibleButton) {
     standardWrapper.style.display = "block";
     customWrapper.style.display = "none";
   } else {
-    // Show custom shipping flow
+    console.log("No visible product buttons");
     standardWrapper.style.display = "none";
     customWrapper.style.display = "block";
   }
